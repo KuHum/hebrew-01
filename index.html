@@ -477,6 +477,8 @@
         "Turkish","Vietnamese","Urdu"
     ];
 
+    const CORS_PROXY = 'https://corsproxy.io/?';
+
     let dom = {};
     function cacheDomReferences() {
         dom.appContainer = document.getElementById('appContainer');
@@ -674,7 +676,6 @@
         renderUserDropdown();
     }
 
-    // ── Settings modal ──
     function populateLangDropdown() {
         dom.settingsLang.innerHTML = '';
         LANGUAGES.forEach(lang => {
@@ -709,9 +710,8 @@
         } catch(e) { return def; }
     }
 
-    // ── Schedule fetching & parsing ──
     function buildScheduleUrl(settings) {
-        const prog = settings.prog; // AWB or AWA
+        const prog = settings.prog;
         const time = settings.time;
         const lang = encodeURIComponent(settings.lang);
         return `https://freehebrew.online/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
@@ -725,21 +725,27 @@
     }
 
     async function fetchWithFallback(settings) {
-        // Try remote first
+        // 1) Try via CORS proxy (primary method)
         try {
-            const url = buildScheduleUrl(settings);
-            const resp = await fetch(url);
+            const proxyUrl = CORS_PROXY + encodeURIComponent(buildScheduleUrl(settings));
+            const resp = await fetch(proxyUrl);
             if (resp.ok) return await resp.text();
         } catch(e) { /* ignore */ }
 
-        // Try local ./html/ folder
+        // 2) Try direct fetch (in case CORS is later enabled)
+        try {
+            const resp = await fetch(buildScheduleUrl(settings));
+            if (resp.ok) return await resp.text();
+        } catch(e) { /* ignore */ }
+
+        // 3) Try local file
         try {
             const localUrl = buildLocalUrl(settings);
             const resp = await fetch(localUrl);
             if (resp.ok) return await resp.text();
         } catch(e) { /* ignore */ }
 
-        throw new Error('Could not load schedule. Please check your connection or place the file in the html folder.');
+        throw new Error('Could not load schedule.');
     }
 
     function parseScheduleHTML(html) {
@@ -820,13 +826,12 @@
                 window._currentWeeksData = JSON.parse(cached);
                 renderApp(window._currentWeeksData, loadTaskStates());
             } else {
-                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://freehebrew.online/LearningSchedule/" target="_blank">here</a> and place it in the <code>./html/</code> folder of your app.</p><p>For automatic updates, ask the Aleph with Beth team to enable CORS.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://freehebrew.online/LearningSchedule/" target="_blank">here</a> and place it in the <code>./html/</code> folder of your app.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
                 updateTotalProgress(null, {});
             }
         }
     }
 
-    // ── Utility (same as before) ──
     function generateTaskId(weekTitle, dayTitle, taskText, index = 0) {
         const composite = `${weekTitle}::${dayTitle}::${index}::${taskText.trim()}`;
         let hash = 0;
@@ -836,10 +841,6 @@
     function convertMarkdownLinksToHtml(text) {
         return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     }
-    function extractDuration(text) { const m = text.match(/\((\d{1,3}:\d{2})\)/); return m ? m[1] : null; }
-    function extractLinks(text) { const links = []; const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g; let m; while((m=regex.exec(text))!==null) links.push({text:m[1], url:m[2]}); return links; }
-    function isQuizTask(text) { return /quiz/i.test(text); }
-    function countBlanks(text) { const m = text.match(/_{2,}/g); return m ? m.length : 0; }
     function debounce(fn, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); }; }
 
     function progressRingSVG(percent, size = 24) {
