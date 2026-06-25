@@ -388,7 +388,7 @@
     </header>
 
     <main class="main-content" id="mainContent">
-        <div class="loading-state" id="loadingState"><div class="loading-spinner"></div><p>Loading your learning schedule&hellip;</p></div>
+        <div class="loading-state" id="loadingState"><div class="loading-spinner"></div><p>Loading your learning schedule…</p></div>
     </main>
 
     <footer class="app-footer" id="appFooter">
@@ -714,13 +714,32 @@
         const prog = settings.prog; // AWB or AWA
         const time = settings.time;
         const lang = encodeURIComponent(settings.lang);
+        return `https://freehebrew.online/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
+    }
+
+    function buildLocalUrl(settings) {
+        const prog = settings.prog;
+        const time = settings.time;
+        const lang = encodeURIComponent(settings.lang);
         return `./html/${prog}Sched_T${time}_${lang}.htm`;
     }
 
-    async function fetchScheduleHTML(url) {
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error(`Failed to fetch schedule: ${resp.status}`);
-        return await resp.text();
+    async function fetchWithFallback(settings) {
+        // Try remote first
+        try {
+            const url = buildScheduleUrl(settings);
+            const resp = await fetch(url);
+            if (resp.ok) return await resp.text();
+        } catch(e) { /* ignore */ }
+
+        // Try local ./html/ folder
+        try {
+            const localUrl = buildLocalUrl(settings);
+            const resp = await fetch(localUrl);
+            if (resp.ok) return await resp.text();
+        } catch(e) { /* ignore */ }
+
+        throw new Error('Could not load schedule. Please check your connection or place the file in the html folder.');
     }
 
     function parseScheduleHTML(html) {
@@ -788,7 +807,7 @@
         }
 
         try {
-            const html = await fetchScheduleHTML(url);
+            const html = await fetchWithFallback(settings);
             const weeks = parseScheduleHTML(html);
             window._currentWeeksData = weeks;
             localStorage.setItem(CACHE_KEY, JSON.stringify(weeks));
@@ -801,7 +820,7 @@
                 window._currentWeeksData = JSON.parse(cached);
                 renderApp(window._currentWeeksData, loadTaskStates());
             } else {
-                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>Please check your internet connection and try again.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://freehebrew.online/LearningSchedule/" target="_blank">here</a> and place it in the <code>./html/</code> folder of your app.</p><p>For automatic updates, ask the Aleph with Beth team to enable CORS.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
                 updateTotalProgress(null, {});
             }
         }
