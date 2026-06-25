@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)https://leekehlerdesign.ca/LearningSchedule/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, user-scalable=yes">
+  <title>Aleph With Beth and Alpha with Angela Learning Schedule</title>
+  <link rel="icon" href="https://leekehlerdesign.ca/LearningSchedule/images/cropped-Aleph_with_Beth-logo-beth-transparent-1-32x32.png" sizes="32x32">
+  <script src="./Aleph With Beth and Alpha with Angela Learning Schedule_files/jquery-1.12.4.js"></script>
+  <script src="./Aleph With Beth and Alpha with Angela Learning Schedule_files/localization.js"></script>
+  <!--
+  // Todo:
+  //    - Figure out a way to generate the PDFs automatically from PHP without the overhead of a large library.
+  //
+  // Revision history:
+  // 2025/01/02 - SK - converted Perl program created by Carol C. Kankelborg to HTML/JS/PHP
+  // 2025/01/27 - SK - automatically load page whenever a parameter changes and remove Load button  
+  // 2025/02/08 - SK - Switch to only generating HTML lessons if they don't exist or are older than the files
+  //                          - they are based on. This will speed up loading and reduce overhead.
+  -->
+  <style>
+  body {background-color: white;}
+  #section_header h1   {color: blue; text-align: center; width: 100%; margin: 0px; font-size: 1.5em;}
+  p    {color: black;}
+  .section_header {
+/*         width: 670px; */
+      max-width: 6.5in;
+      border: 2px solid darkblue;
+      padding: 10px;
+      margin: 10px;
+  }
+  #display {
+      max-width: 6.8in;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: wrap;
+  }
+/*  #print_button {
+      float: right;
+  } */
+ @media (max-width: 600px) {
+      #section_header h1   {margin: 0px; font-size: 1em;}
+      #display {width: 100%;}
+  }
+  </style>
+<link id="dynamic-favicon" rel="shortcut icon" href="https://leekehlerdesign.ca/LearningSchedule/images/cropped-alpha-with-angela-logo-transparent-a-square-32x32.png"></head>
+<body lang="EN-US" dir="ltr">
+  <div id="section_header" class="section_header">
+    <h1 id="title1">Aleph with Beth and Alpha with Angela</h1>
+    <h1 id="title2">Learning Scheduler</h1><br>
+    
+    <label for="lang" id="lang_label">Language</label>
+    <select id="lang" name="lang" onchange="set_cookie_from_value(&#39;lang&#39;, &#39;learning_program_language&#39;);"><option value="Afrikaans">Afrikaans</option><option value="Albanian">Albanian</option><option value="Amharic">Amharic</option><option value="Arabic">Arabic</option><option value="Assamese">Assamese</option><option value="Bengali">Bengali</option><option value="Burmese">Burmese</option><option value="Cebuano">Cebuano</option><option value="Croatian">Croatian</option><option value="Dutch">Dutch</option><option value="English">English</option><option value="Farsi">Farsi</option><option value="Finnish">Finnish</option><option value="French">French</option><option value="Fulfulde">Fulfulde</option><option value="German">German</option><option value="Greek">Greek</option><option value="Gujarati">Gujarati</option><option value="Hausa">Hausa</option><option value="Hebrew">Hebrew</option><option value="Hindi">Hindi</option><option value="Hmong">Hmong</option><option value="Hungarian">Hungarian</option><option value="Iloko">Iloko</option><option value="Indonesian">Indonesian</option><option value="Kannada">Kannada</option><option value="Khmer">Khmer</option><option value="Korean">Korean</option><option value="Lao">Lao</option><option value="Malagasy">Malagasy</option><option value="Malay">Malay</option><option value="Malayalam">Malayalam</option><option value="Mandarin">Mandarin</option><option value="Marathi">Marathi</option><option value="Nepali">Nepali</option><option value="Odia">Odia</option><option value="Pashto">Pashto</option><option value="Polish">Polish</option><option value="Portuguese">Portuguese</option><option value="Punjabi">Punjabi</option><option value="Russian">Russian</option><option value="Serbian">Serbian</option><option value="Sindhi">Sindhi</option><option value="Spanish">Spanish</option><option value="Swahili">Swahili</option><option value="Swedish">Swedish</option><option value="Tagalog">Tagalog</option><option value="Tamil">Tamil</option><option value="Telugu">Telugu</option><option value="Thai">Thai</option><option value="Tok Pisin">Tok Pisin</option><option value="Turkish">Turkish</option><option value="Vietnamese">Vietnamese</option><option value="Urdu">Urdu</option></select><br>
+    
+    <label for="learning_program" id="learning_program_label">Learning program</label>
+    <select id="learning_program" name="learning_program" onchange="set_cookie_from_value(&#39;learning_program&#39;, &#39;learning_program&#39;);"><option value="Aleph">Aleph with Beth</option><option value="Alpha">Alpha with Angela</option></select><br>
+    
+    <label for="time" id="time_per_day_label">Time per day</label>
+    <select id="time" name="video_file" onchange="set_cookie_from_value(&#39;time&#39;, &#39;learning_program_time&#39;);">
+          <option value="90:00">90:00</option>
+          <option value="60:00">60:00</option>
+          <option value="30:00">30:00</option>
+    </select><br><br>
+    
+    <button type="button" id="print_button" onclick="printLearningSchedule();">Print</button>
+    <!-- button type="button" id="select_button" onclick="selectLearningSchedule();">Select All</button -->
+    <button type="button" id="copy_button" onclick="copyLearningSchedule();">Copy</button>
+    <!-- button type="button" id="download_PDF_button" onclick="downloadPDF();">Download PDF</button -->
+  </div>
+  
+  <div id="display" title="Learning Schedule">
+
+
+
+<style>
+/*
+Design by Sheldon Kehler
+Last updated: Jan 17, 2025
+*/
+
+body {
+/*	background: #003366 url(../images/back_all.gif); */
+	font: 13px Tahoma, Verdana, Arial, Helvetica, sans-serif;
+/*	color: #333333; */
+/*	min-width: 570px; */
+}
+
+H1 {
+	font-size: 20px;
+}
+H2 {
+	font-size: 18px;
+}
+H3 {
+	font-size: 16px;
+}
+
+p {
+	line-height: 14px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+a {
+	color: blue;
+}
+
+/* Style its checked state...with a ticked icon */
+input[type="checkbox"] {
+	opacity: 1;
+	pointer-events: none;
+}
+
+.link a {
+/*	float: left; */
+    display: block;
+	text-align: left;
+	text-decoration: none;
+/*	font-weight: bold; */
+	font-size: 14px;
+/*	text-transform: uppercase; */
+	padding-left: 22px;
+}
+
+.total_time {
+	font-weight: bold;
+}
+
+.more {
+	font-weight: bold;
+	padding-top: 22px;
+}
+
+.week {
+	padding-top: 22px;
+}
+</style>
+<header>
+		<img style="margin: 0px; width: 100%;" src="./Aleph With Beth and Alpha with Angela Learning Schedule_files/Alpha with Angela logo.jpg" alt="Alpha with Angela"></header>
+
+<h1>Study Schedule for Lessons 1–40</h1>
+
+<p>A plan to use Alpha with Angela videos to learn Greek.</p>
+<p>No prior knowledge is assumed.</p>
+<p>Feel free to download and tailor it to your own schedule.</p>
+<p>Print it out if you can and start checking off your progress!</p>
+<h1>Videos to help you get started</h1>
+
+<p>How to Use Alpha with Angela Videos to Learn Biblical Greek (English, 10:19)</p>
+<p class="link"><a href="https://www.youtube.com/watch?v=GEJYWpZV2TM" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=GEJYWpZV2TM
+</a></p>
+
+<p>Seven tips for studying Biblical languages (English, 6:53)</p>
+<p class="link"><a href="https://www.youtube.com/watch?v=KDpOkbrVFuM" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=KDpOkbrVFuM
+</a></p>
+
+<p>How to Keep Growing in Greek if You’ve Reached the End of Our Videos</p>
+<p class="link"><a href="https://www.youtube.com/watch?v=n8GfIhf3lXQ" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=n8GfIhf3lXQ
+</a></p>
+
+<h1>Useful Links</h1>
+
+<p>Alpha with Angela Home Page</p>
+<p class="link"><a href="https://freegreek.online/" target="_blank" rel="noopener noreferrer">https://freegreek.online
+</a></p>
+
+<p>All Resources (Lesson Scripts, Quizzes, Grammar, Vocabulary, Worksheets, etc.):</p>
+<p class="link"><a href="https://freegreek.online/resources" target="_blank" rel="noopener noreferrer">https://freegreek.online/resources
+</a></p>
+
+<p class="link">Video Playlists: <a href="https://www.youtube.com/@AlphawithAngela/playlists" target="_blank" rel="noopener noreferrer">https://www.youtube.com/@AlphawithAngela/playlists
+</a></p>
+
+<p>Alphabet Practice Worksheet:</p>
+<p class="link"><a href="https://drive.google.com/file/d/1AKbspwYzNfQt3muUmpj-8nyh8LjOYIud/view?usp=share_link" target="_blank" rel="noopener noreferrer">https://drive.google.com/file/d/1AKbspwYzNfQt3muUmpj-8nyh8LjOYIud/view?usp=share_link
+</a></p>
+
+
+
+<h2 class="week">Week 1</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_listen">▢ 	Watch Lesson 1 (12:20) just listening. (<a href="https://www.youtube.com/watch?v=gLe1GhR5l0E" target="_blank" rel="noopener noreferrer">Singular masculine nouns and adjectives</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 1 (12:20) repeating aloud. (<a href="https://www.youtube.com/watch?v=gLe1GhR5l0E" target="_blank" rel="noopener noreferrer">Singular masculine nouns and adjectives</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 1 (12:20) repeating aloud. (<a href="https://www.youtube.com/watch?v=gLe1GhR5l0E" target="_blank" rel="noopener noreferrer">Singular masculine nouns and adjectives</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 2 (12:24) just listening. (<a href="https://www.youtube.com/watch?v=9wtC-HxfW6U" target="_blank" rel="noopener noreferrer">Singular feminine nouns,</a>)</p>
+<p class="total_time">Approximate Amount of Time: 49:24</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 2 (12:24) repeating aloud. (<a href="https://www.youtube.com/watch?v=9wtC-HxfW6U" target="_blank" rel="noopener noreferrer">Singular feminine nouns,</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 1 (12:20) repeating aloud. (<a href="https://www.youtube.com/watch?v=gLe1GhR5l0E" target="_blank" rel="noopener noreferrer">Singular masculine nouns and adjectives</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 2 (12:24) repeating aloud. (<a href="https://www.youtube.com/watch?v=9wtC-HxfW6U" target="_blank" rel="noopener noreferrer">Singular feminine nouns,</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=XZjeD7TVgoc" target="_blank" rel="noopener noreferrer">Quiz for Lessons 1-2</a> (7:18), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 3 (12:28) just listening. (<a href="https://www.youtube.com/watch?v=9kiTGgrK494" target="_blank" rel="noopener noreferrer">Singular neuter nouns, adjectives and article</a>)</p>
+<p class="total_time">Approximate Amount of Time: 56:54</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 3 (12:28) repeating aloud. (<a href="https://www.youtube.com/watch?v=9kiTGgrK494" target="_blank" rel="noopener noreferrer">Singular neuter nouns, adjectives and article</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 2 (12:24) repeating aloud. (<a href="https://www.youtube.com/watch?v=9wtC-HxfW6U" target="_blank" rel="noopener noreferrer">Singular feminine nouns,</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 3 (12:28) repeating aloud. (<a href="https://www.youtube.com/watch?v=9kiTGgrK494" target="_blank" rel="noopener noreferrer">Singular neuter nouns, adjectives and article</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 4 (15:04) just listening. (<a href="https://www.youtube.com/watch?v=ICKQWl5oRhM" target="_blank" rel="noopener noreferrer">Review and first conjunctions</a>)</p>
+<p class="total_time">Approximate Amount of Time: 52:24</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 4 (15:04) repeating aloud. (<a href="https://www.youtube.com/watch?v=ICKQWl5oRhM" target="_blank" rel="noopener noreferrer">Review and first conjunctions</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 3 (12:28) repeating aloud. (<a href="https://www.youtube.com/watch?v=9kiTGgrK494" target="_blank" rel="noopener noreferrer">Singular neuter nouns, adjectives and article</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 4 (15:04) repeating aloud. (<a href="https://www.youtube.com/watch?v=ICKQWl5oRhM" target="_blank" rel="noopener noreferrer">Review and first conjunctions</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=4b3I99kbpcI" target="_blank" rel="noopener noreferrer">Quiz for Lessons 3-4</a> (10:43), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 53:19</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_listen">▢ 	Watch Lesson 5 (10:43) just listening. (<a href="https://www.youtube.com/watch?v=Cus1ts4TLb4" target="_blank" rel="noopener noreferrer">1st and 2nd person singular pronouns and the verb 'to be</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 5 (10:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=Cus1ts4TLb4" target="_blank" rel="noopener noreferrer">1st and 2nd person singular pronouns and the verb 'to be</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 4 (15:04) repeating aloud. (<a href="https://www.youtube.com/watch?v=ICKQWl5oRhM" target="_blank" rel="noopener noreferrer">Review and first conjunctions</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 5 (10:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=Cus1ts4TLb4" target="_blank" rel="noopener noreferrer">1st and 2nd person singular pronouns and the verb 'to be</a>)</p>
+
+<p class="total_time">Approximate Amount of Time: 47:13</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_listen">▢ 	Watch Lesson 6 (16:33) just listening. (<a href="https://www.youtube.com/watch?v=SjfGRhudnm8" target="_blank" rel="noopener noreferrer">Masculine, feminine and neuter plural articles and nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 6 (16:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=SjfGRhudnm8" target="_blank" rel="noopener noreferrer">Masculine, feminine and neuter plural articles and nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 5 (10:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=Cus1ts4TLb4" target="_blank" rel="noopener noreferrer">1st and 2nd person singular pronouns and the verb 'to be</a>)</p>
+<p class="total_time">Approximate Amount of Time: 43:49</p>
+
+
+<h2 class="week">Week 2</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 6 (16:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=SjfGRhudnm8" target="_blank" rel="noopener noreferrer">Masculine, feminine and neuter plural articles and nouns</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=59ouJeL0CuA" target="_blank" rel="noopener noreferrer">Quiz for Lessons 5-6</a> (11:21), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 7 (14:57) just listening. (<a href="https://www.youtube.com/watch?v=V2TUeARcnz0" target="_blank" rel="noopener noreferrer">Parts of the body and more plural nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 7 (14:57) repeating aloud. (<a href="https://www.youtube.com/watch?v=V2TUeARcnz0" target="_blank" rel="noopener noreferrer">Parts of the body and more plural nouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 57:48</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 6 (16:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=SjfGRhudnm8" target="_blank" rel="noopener noreferrer">Masculine, feminine and neuter plural articles and nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 7 (14:57) repeating aloud. (<a href="https://www.youtube.com/watch?v=V2TUeARcnz0" target="_blank" rel="noopener noreferrer">Parts of the body and more plural nouns</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 8 (17:03) just listening. (<a href="https://www.youtube.com/watch?v=IGUn-_DYSms" target="_blank" rel="noopener noreferrer">Plural masculine, feminine and neuter adjectives</a>)</p>
+<p class="total_time">Approximate Amount of Time: 48:33</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 8 (17:03) repeating aloud. (<a href="https://www.youtube.com/watch?v=IGUn-_DYSms" target="_blank" rel="noopener noreferrer">Plural masculine, feminine and neuter adjectives</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 7 (14:57) repeating aloud. (<a href="https://www.youtube.com/watch?v=V2TUeARcnz0" target="_blank" rel="noopener noreferrer">Parts of the body and more plural nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 8 (17:03) repeating aloud. (<a href="https://www.youtube.com/watch?v=IGUn-_DYSms" target="_blank" rel="noopener noreferrer">Plural masculine, feminine and neuter adjectives</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=2Sx1YXWxIFQ" target="_blank" rel="noopener noreferrer">Quiz for Lessons 7-8</a> (9:36), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 58:39</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_listen">▢ 	Watch Lesson 9 (23:41) just listening. (<a href="https://www.youtube.com/watch?v=aTnGokTyOMs" target="_blank" rel="noopener noreferrer">Alphabet Part 1</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 9 (23:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=aTnGokTyOMs" target="_blank" rel="noopener noreferrer">Alphabet Part 1</a>)</p>
+<p class="write10">▢ 	Practice writing each of the Greek letters from Lesson 9 ten times.</p>
+<p class="total_time">Approximate Amount of Time: 52:22</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 8 (17:03) repeating aloud. (<a href="https://www.youtube.com/watch?v=IGUn-_DYSms" target="_blank" rel="noopener noreferrer">Plural masculine, feminine and neuter adjectives</a>)</p>
+<p class="watch_listen">▢ 	Watch Lesson 9a (18:48) just listening. (<a href="https://www.youtube.com/watch?v=HwtwoSRBVvw" target="_blank" rel="noopener noreferrer">Reading practise with breathing marks and accents</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 9 (23:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=aTnGokTyOMs" target="_blank" rel="noopener noreferrer">Alphabet Part 1</a>)</p>
+<p class="total_time">Approximate Amount of Time: 59:32</p>
+
+<h3 class="day">Day 6</h3>
+<p class="read_script">▢ 	Read the script for Lesson 9 aloud twice. (<a href="https://www.youtube.com/watch?v=aTnGokTyOMs" target="_blank" rel="noopener noreferrer">Alphabet Part 1</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 10 (10:08) just listening. (<a href="https://www.youtube.com/watch?v=KJc35t8tg-Q" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Neuter)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 10 (10:08) repeating aloud. (<a href="https://www.youtube.com/watch?v=KJc35t8tg-Q" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Neuter)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 9a (18:48) repeating aloud. (<a href="https://www.youtube.com/watch?v=HwtwoSRBVvw" target="_blank" rel="noopener noreferrer">Reading practise with breathing marks and accents</a>)</p>
+<p class="total_time">Approximate Amount of Time: 59:04</p>
+
+
+<h2 class="week">Week 3</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 9 (23:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=aTnGokTyOMs" target="_blank" rel="noopener noreferrer">Alphabet Part 1</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 10 (10:08) repeating aloud. (<a href="https://www.youtube.com/watch?v=KJc35t8tg-Q" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Neuter)</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=rKRUNLK9zzY" target="_blank" rel="noopener noreferrer">Quiz for Lessons 9-10</a> (9:30), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 11 (8:58) just listening. (<a href="https://www.youtube.com/watch?v=UuwiCVFdHrc" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Feminine)</a>)</p>
+<p class="total_time">Approximate Amount of Time: 52:17</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 11 (8:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=UuwiCVFdHrc" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Feminine)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 10 (10:08) repeating aloud. (<a href="https://www.youtube.com/watch?v=KJc35t8tg-Q" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Neuter)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 11 (8:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=UuwiCVFdHrc" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Feminine)</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 12 (10:54) just listening. (<a href="https://www.youtube.com/watch?v=S_Zs4fSHYwE" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Masculine)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 12 (10:54) repeating aloud. (<a href="https://www.youtube.com/watch?v=S_Zs4fSHYwE" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Masculine)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 11 (8:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=UuwiCVFdHrc" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Feminine)</a>)</p>
+<p class="total_time">Approximate Amount of Time: 58:50</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 12 (10:54) repeating aloud. (<a href="https://www.youtube.com/watch?v=S_Zs4fSHYwE" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Masculine)</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=jR5Hwzu2TsI" target="_blank" rel="noopener noreferrer">Quiz for Lessons 11-12</a> (7:27), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 13 (9:12) just listening. (<a href="https://www.youtube.com/watch?v=CkqJ3gzI9kg" target="_blank" rel="noopener noreferrer">Plural Pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 13 (9:12) repeating aloud. (<a href="https://www.youtube.com/watch?v=CkqJ3gzI9kg" target="_blank" rel="noopener noreferrer">Plural Pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 12 (10:54) repeating aloud. (<a href="https://www.youtube.com/watch?v=S_Zs4fSHYwE" target="_blank" rel="noopener noreferrer">Numbers 1-5 (Masculine)</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 13 (9:12) repeating aloud. (<a href="https://www.youtube.com/watch?v=CkqJ3gzI9kg" target="_blank" rel="noopener noreferrer">Plural Pronouns</a>)</p>
+
+<p class="total_time">Approximate Amount of Time: 56:51</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_listen">▢ 	Watch Lesson 14 (14:09) just listening. (<a href="https://www.youtube.com/watch?v=plAQSSyPVyg" target="_blank" rel="noopener noreferrer">Nominative Pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 14 (14:09) repeating aloud. (<a href="https://www.youtube.com/watch?v=plAQSSyPVyg" target="_blank" rel="noopener noreferrer">Nominative Pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 13 (9:12) repeating aloud. (<a href="https://www.youtube.com/watch?v=CkqJ3gzI9kg" target="_blank" rel="noopener noreferrer">Plural Pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 14 (14:09) repeating aloud. (<a href="https://www.youtube.com/watch?v=plAQSSyPVyg" target="_blank" rel="noopener noreferrer">Nominative Pronouns</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=Ugvlgv9Y8BE" target="_blank" rel="noopener noreferrer">Quiz for Lessons 13-14</a> (6:43), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 58:22</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_listen">▢ 	Watch Lesson 15 (19:40) just listening. (<a href="https://www.youtube.com/watch?v=jedWl_hKg_Q" target="_blank" rel="noopener noreferrer">Family terms</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 15 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=jedWl_hKg_Q" target="_blank" rel="noopener noreferrer">Family terms</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 14 (14:09) repeating aloud. (<a href="https://www.youtube.com/watch?v=plAQSSyPVyg" target="_blank" rel="noopener noreferrer">Nominative Pronouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 53:29</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 15 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=jedWl_hKg_Q" target="_blank" rel="noopener noreferrer">Family terms</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 16 (21:11) just listening. (<a href="https://www.youtube.com/watch?v=KjdzBrUGMZU" target="_blank" rel="noopener noreferrer">Alphabet Part 2</a>)</p>
+<p class="total_time">Approximate Amount of Time: 40:51</p>
+
+
+<h2 class="week">Week 4</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 16 (21:11) repeating aloud. (<a href="https://www.youtube.com/watch?v=KjdzBrUGMZU" target="_blank" rel="noopener noreferrer">Alphabet Part 2</a>)</p>
+<p class="write10">▢ 	Practice writing each of the Greek letters from Lesson 16 ten times.</p>
+<p class="watch_repeat">▢ 	Watch Lesson 15 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=jedWl_hKg_Q" target="_blank" rel="noopener noreferrer">Family terms</a>)</p>
+<p class="watch_listen">▢ 	Watch Lesson 16a (9:00) just listening. (<a href="https://www.youtube.com/watch?v=nqb8iDNttwA" target="_blank" rel="noopener noreferrer">Practise reading with diphthongs</a>)</p>
+<p class="total_time">Approximate Amount of Time: 54:51</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_listen">▢ 	Watch Lesson 16b (8:17) just listening. (<a href="https://www.youtube.com/watch?v=pwZz24hmiec" target="_blank" rel="noopener noreferrer">Practise reading with capital letters</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 16 (21:11) repeating aloud. (<a href="https://www.youtube.com/watch?v=KjdzBrUGMZU" target="_blank" rel="noopener noreferrer">Alphabet Part 2</a>)</p>
+<p class="read_script">▢ 	Read the script for Lesson 16 aloud twice. (<a href="https://www.youtube.com/watch?v=KjdzBrUGMZU" target="_blank" rel="noopener noreferrer">Alphabet Part 2</a>)</p>
+<p class="total_time">Approximate Amount of Time: 49:28</p>
+
+<h3 class="day">Day 3</h3>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=7a3CBuwOda8" target="_blank" rel="noopener noreferrer">Quiz for Lessons 15-16</a> (11:24), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 17 (14:46) just listening. (<a href="https://www.youtube.com/watch?v=lycceEiy9WM" target="_blank" rel="noopener noreferrer">Singular genitive pronouns and articles</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 17 (14:46) repeating aloud. (<a href="https://www.youtube.com/watch?v=lycceEiy9WM" target="_blank" rel="noopener noreferrer">Singular genitive pronouns and articles</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 16a (9:00) repeating aloud. (<a href="https://www.youtube.com/watch?v=nqb8iDNttwA" target="_blank" rel="noopener noreferrer">Practise reading with diphthongs</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 16b (8:17) repeating aloud. (<a href="https://www.youtube.com/watch?v=pwZz24hmiec" target="_blank" rel="noopener noreferrer">Practise reading with capital letters</a>)</p>
+<p class="total_time">Approximate Amount of Time: 58:13</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 16 (21:11) repeating aloud. (<a href="https://www.youtube.com/watch?v=KjdzBrUGMZU" target="_blank" rel="noopener noreferrer">Alphabet Part 2</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 17 (14:46) repeating aloud. (<a href="https://www.youtube.com/watch?v=lycceEiy9WM" target="_blank" rel="noopener noreferrer">Singular genitive pronouns and articles</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 18 (18:49) just listening. (<a href="https://www.youtube.com/watch?v=P1wIRpcVbkM" target="_blank" rel="noopener noreferrer">Alphabet Part 3</a>)</p>
+<p class="total_time">Approximate Amount of Time: 54:46</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 18 (18:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=P1wIRpcVbkM" target="_blank" rel="noopener noreferrer">Alphabet Part 3</a>)</p>
+<p class="write10">▢ 	Practice writing each of the Greek letters from Lesson 18 ten times.</p>
+<p class="watch_repeat">▢ 	Watch Lesson 17 (14:46) repeating aloud. (<a href="https://www.youtube.com/watch?v=lycceEiy9WM" target="_blank" rel="noopener noreferrer">Singular genitive pronouns and articles</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 18 (18:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=P1wIRpcVbkM" target="_blank" rel="noopener noreferrer">Alphabet Part 3</a>)</p>
+<p class="total_time">Approximate Amount of Time: 57:24</p>
+
+<h3 class="day">Day 6</h3>
+<p class="read_script">▢ 	Read the script for Lesson 18 aloud twice. (<a href="https://www.youtube.com/watch?v=P1wIRpcVbkM" target="_blank" rel="noopener noreferrer">Alphabet Part 3</a>)</p>
+<p class="extra">▢ 	Video of story from Lesson 18, <a href="https://www.youtube.com/watch?v=XdI_EeiW1AQ" target="_blank" rel="noopener noreferrer">How to write the Greek Alphabet</a> (9:01), is available for review.</p>
+<p class="worship">▢ 	Watch song video <a href="https://www.youtube.com/watch?v=749JoaGOCcg" target="_blank" rel="noopener noreferrer">The Greek Alphabet Song</a> (2:50). Try to sing along.</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=gWKZ7P6cJOM" target="_blank" rel="noopener noreferrer">Quiz for lessons 17-18</a> (13:42), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 19 (22:01) just listening. (<a href="https://www.youtube.com/watch?v=Hn_5Z7quqxE" target="_blank" rel="noopener noreferrer">Plural genitive pronouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 58:33</p>
+
+
+<h2 class="week">Week 5</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 19 (22:01) repeating aloud. (<a href="https://www.youtube.com/watch?v=Hn_5Z7quqxE" target="_blank" rel="noopener noreferrer">Plural genitive pronouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 18 (18:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=P1wIRpcVbkM" target="_blank" rel="noopener noreferrer">Alphabet Part 3</a>)</p>
+<p class="total_time">Approximate Amount of Time: 40:50</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 19 (22:01) repeating aloud. (<a href="https://www.youtube.com/watch?v=Hn_5Z7quqxE" target="_blank" rel="noopener noreferrer">Plural genitive pronouns</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 20 (20:49) just listening. (<a href="https://www.youtube.com/watch?v=OqYszhK66VE" target="_blank" rel="noopener noreferrer">Genitive second declension nouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 42:50</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 20 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=OqYszhK66VE" target="_blank" rel="noopener noreferrer">Genitive second declension nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 19 (22:01) repeating aloud. (<a href="https://www.youtube.com/watch?v=Hn_5Z7quqxE" target="_blank" rel="noopener noreferrer">Plural genitive pronouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 42:50</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 20 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=OqYszhK66VE" target="_blank" rel="noopener noreferrer">Genitive second declension nouns</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=OT5bBRSICEo" target="_blank" rel="noopener noreferrer">Quiz for Lessons 19-20</a> (12:51), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 21 (14:33) just listening. (<a href="https://www.youtube.com/watch?v=yXnbmnA7Quc" target="_blank" rel="noopener noreferrer">1st declension genitive singular nouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 48:13</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 21 (14:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=yXnbmnA7Quc" target="_blank" rel="noopener noreferrer">1st declension genitive singular nouns</a>)</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=iNmTsw_3IcE" target="_blank" rel="noopener noreferrer">Story 1. The Little Sheep (with text)</a> (3:38) just listening.</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=9868boUMfjg" target="_blank" rel="noopener noreferrer">Story 2. The Bad Children (with text) ΤΑ ΚΑΚΑ ΠΑΙΔΙΑ</a> (3:38) just listening.</p>
+<p class="watch_repeat">▢ 	Watch Lesson 20 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=OqYszhK66VE" target="_blank" rel="noopener noreferrer">Genitive second declension nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 21 (14:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=yXnbmnA7Quc" target="_blank" rel="noopener noreferrer">1st declension genitive singular nouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 57:11</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=iNmTsw_3IcE" target="_blank" rel="noopener noreferrer">Story 1. The Little Sheep (with text)</a> (3:38) repeating aloud.</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=9868boUMfjg" target="_blank" rel="noopener noreferrer">Story 2. The Bad Children (with text) ΤΑ ΚΑΚΑ ΠΑΙΔΙΑ</a> (3:38) repeating aloud.</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 22 (19:48) just listening. (<a href="https://www.youtube.com/watch?v=Wb-C7WstVFY" target="_blank" rel="noopener noreferrer">Genitive plural nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 22 (19:48) repeating aloud. (<a href="https://www.youtube.com/watch?v=Wb-C7WstVFY" target="_blank" rel="noopener noreferrer">Genitive plural nouns</a>)</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=d1HRT5NruAo" target="_blank" rel="noopener noreferrer">Story 3. Maria's Family</a> (2:42) just listening.</p>
+<p class="total_time">Approximate Amount of Time: 49:34</p>
+
+
+<h2 class="week">Week 6</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 21 (14:33) repeating aloud. (<a href="https://www.youtube.com/watch?v=yXnbmnA7Quc" target="_blank" rel="noopener noreferrer">1st declension genitive singular nouns</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 22 (19:48) repeating aloud. (<a href="https://www.youtube.com/watch?v=Wb-C7WstVFY" target="_blank" rel="noopener noreferrer">Genitive plural nouns</a>)</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=d1HRT5NruAo" target="_blank" rel="noopener noreferrer">Story 3. Maria's Family</a> (2:42) repeating aloud.</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=Wkq6HkvpRMI" target="_blank" rel="noopener noreferrer">Quiz for Lessons 21 and 22</a> (12:46), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 49:49</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_listen">▢ 	Watch Lesson 23 (18:32) just listening. (<a href="https://www.youtube.com/watch?v=jKrFaCENS0A" target="_blank" rel="noopener noreferrer">Numbers 6-10, many and none</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 23 (18:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=jKrFaCENS0A" target="_blank" rel="noopener noreferrer">Numbers 6-10, many and none</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 22 (19:48) repeating aloud. (<a href="https://www.youtube.com/watch?v=Wb-C7WstVFY" target="_blank" rel="noopener noreferrer">Genitive plural nouns</a>)</p>
+<p class="total_time">Approximate Amount of Time: 56:52</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 23 (18:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=jKrFaCENS0A" target="_blank" rel="noopener noreferrer">Numbers 6-10, many and none</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 24 (21:13) just listening. (<a href="https://www.youtube.com/watch?v=W9Mw4xxSh1U" target="_blank" rel="noopener noreferrer">Prepositional phrases</a>)</p>
+<p class="total_time">Approximate Amount of Time: 39:45</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 24 (21:13) repeating aloud. (<a href="https://www.youtube.com/watch?v=W9Mw4xxSh1U" target="_blank" rel="noopener noreferrer">Prepositional phrases</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 23 (18:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=jKrFaCENS0A" target="_blank" rel="noopener noreferrer">Numbers 6-10, many and none</a>)</p>
+<p class="total_time">Approximate Amount of Time: 39:45</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 24 (21:13) repeating aloud. (<a href="https://www.youtube.com/watch?v=W9Mw4xxSh1U" target="_blank" rel="noopener noreferrer">Prepositional phrases</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=I5VoSRx7wHk" target="_blank" rel="noopener noreferrer">Quiz for Lessons 23 and 24</a> (11:12), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 25 (11:40) just listening. (<a href="https://www.youtube.com/watch?v=GqajZIsDraQ" target="_blank" rel="noopener noreferrer">Practise prepositional phrases</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 25 (11:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=GqajZIsDraQ" target="_blank" rel="noopener noreferrer">Practise prepositional phrases</a>)</p>
+<p class="total_time">Approximate Amount of Time: 55:45</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 24 (21:13) repeating aloud. (<a href="https://www.youtube.com/watch?v=W9Mw4xxSh1U" target="_blank" rel="noopener noreferrer">Prepositional phrases</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 25 (11:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=GqajZIsDraQ" target="_blank" rel="noopener noreferrer">Practise prepositional phrases</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 26 (16:14) just listening. (<a href="https://www.youtube.com/watch?v=gelGP1cJe8g" target="_blank" rel="noopener noreferrer">Walk!</a>)</p>
+<p class="total_time">Approximate Amount of Time: 49:07</p>
+
+
+<h2 class="week">Week 7</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 26 (16:14) repeating aloud. (<a href="https://www.youtube.com/watch?v=gelGP1cJe8g" target="_blank" rel="noopener noreferrer">Walk!</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 25 (11:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=GqajZIsDraQ" target="_blank" rel="noopener noreferrer">Practise prepositional phrases</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 26 (16:14) repeating aloud. (<a href="https://www.youtube.com/watch?v=gelGP1cJe8g" target="_blank" rel="noopener noreferrer">Walk!</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=kmXKxTgeJRs" target="_blank" rel="noopener noreferrer">Quiz for Lessons 25 and 26</a> (10:03), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 54:11</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_listen">▢ 	Watch Lesson 27 (11:26) just listening. (<a href="https://www.youtube.com/watch?v=kmXKxTgeJRs" target="_blank" rel="noopener noreferrer">Commands and actions</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 27 (11:26) repeating aloud. (<a href="https://www.youtube.com/watch?v=kmXKxTgeJRs" target="_blank" rel="noopener noreferrer">Commands and actions</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 26 (16:14) repeating aloud. (<a href="https://www.youtube.com/watch?v=gelGP1cJe8g" target="_blank" rel="noopener noreferrer">Walk!</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 27 (11:26) repeating aloud. (<a href="https://www.youtube.com/watch?v=kmXKxTgeJRs" target="_blank" rel="noopener noreferrer">Commands and actions</a>)</p>
+
+<p class="total_time">Approximate Amount of Time: 50:32</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_listen">▢ 	Watch Lesson 28 (12:53) just listening. (<a href="https://www.youtube.com/watch?v=sa_BipgiAXk" target="_blank" rel="noopener noreferrer">Geography and more</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 28 (12:53) repeating aloud. (<a href="https://www.youtube.com/watch?v=sa_BipgiAXk" target="_blank" rel="noopener noreferrer">Geography and more</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 27 (11:26) repeating aloud. (<a href="https://www.youtube.com/watch?v=kmXKxTgeJRs" target="_blank" rel="noopener noreferrer">Commands and actions</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 28 (12:53) repeating aloud. (<a href="https://www.youtube.com/watch?v=sa_BipgiAXk" target="_blank" rel="noopener noreferrer">Geography and more</a>)</p>
+<p class="total_time">Approximate Amount of Time: 50:05</p>
+
+<h3 class="day">Day 4</h3>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=pnkFDup29r4" target="_blank" rel="noopener noreferrer">Quiz for Lessons 27-28</a> (10:53), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 29 (20:49) just listening. (<a href="https://www.youtube.com/watch?v=VbW7W6mKVsk" target="_blank" rel="noopener noreferrer">Speech, Flight, and Divine Messengers</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 29 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=VbW7W6mKVsk" target="_blank" rel="noopener noreferrer">Speech, Flight, and Divine Messengers</a>)</p>
+<p class="total_time">Approximate Amount of Time: 52:31</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 28 (12:53) repeating aloud. (<a href="https://www.youtube.com/watch?v=sa_BipgiAXk" target="_blank" rel="noopener noreferrer">Geography and more</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 29 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=VbW7W6mKVsk" target="_blank" rel="noopener noreferrer">Speech, Flight, and Divine Messengers</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 30 (19:40) just listening. (<a href="https://www.youtube.com/watch?v=tqlrw8PqnN0" target="_blank" rel="noopener noreferrer">Listen! Hear, obey and follow</a>)</p>
+<p class="total_time">Approximate Amount of Time: 53:22</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 30 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=tqlrw8PqnN0" target="_blank" rel="noopener noreferrer">Listen! Hear, obey and follow</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 29 (20:49) repeating aloud. (<a href="https://www.youtube.com/watch?v=VbW7W6mKVsk" target="_blank" rel="noopener noreferrer">Speech, Flight, and Divine Messengers</a>)</p>
+<p class="total_time">Approximate Amount of Time: 40:29</p>
+
+
+<h2 class="week">Week 8</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 30 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=tqlrw8PqnN0" target="_blank" rel="noopener noreferrer">Listen! Hear, obey and follow</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=MNugr5j70Gk" target="_blank" rel="noopener noreferrer">Quiz for Lessons 29 and 30</a> (9:47), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 31 (12:29) just listening. (<a href="https://www.youtube.com/watch?v=p9QUCa2Etuw" target="_blank" rel="noopener noreferrer">Eating and Drinking</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 31 (12:29) repeating aloud. (<a href="https://www.youtube.com/watch?v=p9QUCa2Etuw" target="_blank" rel="noopener noreferrer">Eating and Drinking</a>)</p>
+<p class="total_time">Approximate Amount of Time: 54:25</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 30 (19:40) repeating aloud. (<a href="https://www.youtube.com/watch?v=tqlrw8PqnN0" target="_blank" rel="noopener noreferrer">Listen! Hear, obey and follow</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 31 (12:29) repeating aloud. (<a href="https://www.youtube.com/watch?v=p9QUCa2Etuw" target="_blank" rel="noopener noreferrer">Eating and Drinking</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 32 (15:58) just listening. (<a href="https://www.youtube.com/watch?v=TMunVJ96-xk" target="_blank" rel="noopener noreferrer">Food and Drink</a>)</p>
+<p class="total_time">Approximate Amount of Time: 48:07</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 32 (15:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=TMunVJ96-xk" target="_blank" rel="noopener noreferrer">Food and Drink</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 31 (12:29) repeating aloud. (<a href="https://www.youtube.com/watch?v=p9QUCa2Etuw" target="_blank" rel="noopener noreferrer">Eating and Drinking</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 32 (15:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=TMunVJ96-xk" target="_blank" rel="noopener noreferrer">Food and Drink</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=jc0JOz57_y8" target="_blank" rel="noopener noreferrer">Quiz for Lessons 31 and 32</a> (13:20), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 57:45</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_listen">▢ 	Watch Lesson 33 (17:15) just listening. (<a href="https://www.youtube.com/watch?v=oVTYSdn0oQA" target="_blank" rel="noopener noreferrer">Give and Take</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 33 (17:15) repeating aloud. (<a href="https://www.youtube.com/watch?v=oVTYSdn0oQA" target="_blank" rel="noopener noreferrer">Give and Take</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 32 (15:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=TMunVJ96-xk" target="_blank" rel="noopener noreferrer">Food and Drink</a>)</p>
+<p class="total_time">Approximate Amount of Time: 50:28</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 33 (17:15) repeating aloud. (<a href="https://www.youtube.com/watch?v=oVTYSdn0oQA" target="_blank" rel="noopener noreferrer">Give and Take</a>)</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 34 (21:19) just listening. (<a href="https://www.youtube.com/watch?v=K5A1fGD8Ccs" target="_blank" rel="noopener noreferrer">Masculine Accusative Plural</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 34 (21:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=K5A1fGD8Ccs" target="_blank" rel="noopener noreferrer">Masculine Accusative Plural</a>)</p>
+<p class="total_time">Approximate Amount of Time: 59:53</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 33 (17:15) repeating aloud. (<a href="https://www.youtube.com/watch?v=oVTYSdn0oQA" target="_blank" rel="noopener noreferrer">Give and Take</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 34 (21:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=K5A1fGD8Ccs" target="_blank" rel="noopener noreferrer">Masculine Accusative Plural</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=0e9aUbOdzs4" target="_blank" rel="noopener noreferrer">Quiz for Lessons 33 and 34</a> (15:14), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 53:48</p>
+
+
+<h2 class="week">Week 9</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_listen">▢ 	Watch Lesson 35 (20:43) just listening. (<a href="https://www.youtube.com/watch?v=kiH2D0vtSAA" target="_blank" rel="noopener noreferrer">In the Beginning... They Ate from the Tree</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 35 (20:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=kiH2D0vtSAA" target="_blank" rel="noopener noreferrer">In the Beginning... They Ate from the Tree</a>)</p>
+<p class="total_time">Approximate Amount of Time: 41:26</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 34 (21:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=K5A1fGD8Ccs" target="_blank" rel="noopener noreferrer">Masculine Accusative Plural</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 35 (20:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=kiH2D0vtSAA" target="_blank" rel="noopener noreferrer">In the Beginning... They Ate from the Tree</a>)</p>
+
+<p class="total_time">Approximate Amount of Time: 42:02</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_listen">▢ 	Watch Lesson 36 (19:19) just listening. (<a href="https://www.youtube.com/watch?v=5GJIjyU3DCM" target="_blank" rel="noopener noreferrer">Comparisons</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 36 (19:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=5GJIjyU3DCM" target="_blank" rel="noopener noreferrer">Comparisons</a>)</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=xtcpH84DN7E" target="_blank" rel="noopener noreferrer">Story 4 (no text) - What does the man have?</a> (4:14) just listening.</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=_afq5eojdG4" target="_blank" rel="noopener noreferrer">Story 4 (with text) - What does the man have?</a> (4:14) just listening.</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=9TpEeuY4XdQ" target="_blank" rel="noopener noreferrer">Story 5 (no text) - They ate from the tree in Paradise</a> (2:42) just listening.</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=U-RTQYTEY6I" target="_blank" rel="noopener noreferrer">Story 5 (with text) - They ate from the tree in Paradise</a> (2:44) just listening.</p>
+<p class="total_time">Approximate Amount of Time: 52:32</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 35 (20:43) repeating aloud. (<a href="https://www.youtube.com/watch?v=kiH2D0vtSAA" target="_blank" rel="noopener noreferrer">In the Beginning... They Ate from the Tree</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 36 (19:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=5GJIjyU3DCM" target="_blank" rel="noopener noreferrer">Comparisons</a>)</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=xtcpH84DN7E" target="_blank" rel="noopener noreferrer">Story 4 (no text) - What does the man have?</a> (4:14) repeating aloud.</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=_afq5eojdG4" target="_blank" rel="noopener noreferrer">Story 4 (with text) - What does the man have?</a> (4:14) repeating aloud.</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=9TpEeuY4XdQ" target="_blank" rel="noopener noreferrer">Story 5 (no text) - They ate from the tree in Paradise</a> (2:42) repeating aloud.</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=U-RTQYTEY6I" target="_blank" rel="noopener noreferrer">Story 5 (with text) - They ate from the tree in Paradise</a> (2:44) repeating aloud.</p>
+<p class="total_time">Approximate Amount of Time: 53:56</p>
+
+<h3 class="day">Day 5</h3>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=eOsB8OmgP14" target="_blank" rel="noopener noreferrer">Quiz for Lessons 35 and 36</a> (10:58), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 37 (19:32) just listening. (<a href="https://www.youtube.com/watch?v=n1JB13nYqXo" target="_blank" rel="noopener noreferrer">Where Is He? Where Was He?</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 37 (19:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=n1JB13nYqXo" target="_blank" rel="noopener noreferrer">Where Is He? Where Was He?</a>)</p>
+<p class="total_time">Approximate Amount of Time: 50:02</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 36 (19:19) repeating aloud. (<a href="https://www.youtube.com/watch?v=5GJIjyU3DCM" target="_blank" rel="noopener noreferrer">Comparisons</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 37 (19:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=n1JB13nYqXo" target="_blank" rel="noopener noreferrer">Where Is He? Where Was He?</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=ng1g-gTyglo" target="_blank" rel="noopener noreferrer">Quiz for the Story: What Does The Man Have?</a> (8:39), and try to respond before hearing the answer.</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=UcpLH67ZV4U" target="_blank" rel="noopener noreferrer">Quiz for the Story: They Ate From The Tree In Paradise</a> (5:49), and try to respond before hearing the answer.</p>
+
+<p class="total_time">Approximate Amount of Time: 53:19</p>
+
+
+<h2 class="week">Week 10</h2>
+
+<h3 class="day">Day 1</h3>
+<p class="watch_listen">▢ 	Watch Lesson 38 (19:39) just listening. (<a href="https://www.youtube.com/watch?v=qGBt1TLGiSM" target="_blank" rel="noopener noreferrer">Livestock, Wild Animals and David the Shepherd Boy</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 38 (19:39) repeating aloud. (<a href="https://www.youtube.com/watch?v=qGBt1TLGiSM" target="_blank" rel="noopener noreferrer">Livestock, Wild Animals and David the Shepherd Boy</a>)</p>
+<p class="watch_repeat">▢ 	Watch Lesson 37 (19:32) repeating aloud. (<a href="https://www.youtube.com/watch?v=n1JB13nYqXo" target="_blank" rel="noopener noreferrer">Where Is He? Where Was He?</a>)</p>
+<p class="total_time">Approximate Amount of Time: 58:50</p>
+
+<h3 class="day">Day 2</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 38 (19:39) repeating aloud. (<a href="https://www.youtube.com/watch?v=qGBt1TLGiSM" target="_blank" rel="noopener noreferrer">Livestock, Wild Animals and David the Shepherd Boy</a>)</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=6AMDJB8t7Co" target="_blank" rel="noopener noreferrer">Quiz for Lessons 37 and 38</a> (10:22), and try to respond before hearing the answer.</p>
+
+
+<p class="watch_listen">▢ 	Watch Lesson 39 (22:41) just listening. (<a href="https://www.youtube.com/watch?v=EtchObPNlLo" target="_blank" rel="noopener noreferrer">Spirit, Soul and Body</a>)</p>
+<p class="total_time">Approximate Amount of Time: 52:42</p>
+
+<h3 class="day">Day 3</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 39 (22:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=EtchObPNlLo" target="_blank" rel="noopener noreferrer">Spirit, Soul and Body</a>)</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=YPAurK7Ur5I" target="_blank" rel="noopener noreferrer">Story 6 - David the Shepherd Boy</a> (2:10) just listening.</p>
+<p class="watch_repeat">▢ 	Watch Lesson 38 (19:39) repeating aloud. (<a href="https://www.youtube.com/watch?v=qGBt1TLGiSM" target="_blank" rel="noopener noreferrer">Livestock, Wild Animals and David the Shepherd Boy</a>)</p>
+<p class="total_time">Approximate Amount of Time: 44:30</p>
+
+<h3 class="day">Day 4</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 39 (22:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=EtchObPNlLo" target="_blank" rel="noopener noreferrer">Spirit, Soul and Body</a>)</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=YPAurK7Ur5I" target="_blank" rel="noopener noreferrer">Story 6 - David the Shepherd Boy</a> (2:10) repeating aloud.</p>
+
+<p class="watch_listen">▢ 	Watch Lesson 40 (17:58) just listening. (<a href="https://www.youtube.com/watch?v=zbwRErsJR9k" target="_blank" rel="noopener noreferrer">Read, Write, “It Is Written”</a>)</p>
+<p class="total_time">Approximate Amount of Time: 42:49</p>
+
+<h3 class="day">Day 5</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 40 (17:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=zbwRErsJR9k" target="_blank" rel="noopener noreferrer">Read, Write, “It Is Written”</a>)</p>
+<p class="watch_story_listen">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=oKjaCGJ5uBc" target="_blank" rel="noopener noreferrer">Story 7 - The Small Boy - Ὁ παῖς ὁ μικρός.</a> (3:15) just listening.</p>
+<p class="watch_repeat">▢ 	Watch Lesson 39 (22:41) repeating aloud. (<a href="https://www.youtube.com/watch?v=EtchObPNlLo" target="_blank" rel="noopener noreferrer">Spirit, Soul and Body</a>)</p>
+<p class="total_time">Approximate Amount of Time: 43:54</p>
+
+<h3 class="day">Day 6</h3>
+<p class="watch_repeat">▢ 	Watch Lesson 40 (17:58) repeating aloud. (<a href="https://www.youtube.com/watch?v=zbwRErsJR9k" target="_blank" rel="noopener noreferrer">Read, Write, “It Is Written”</a>)</p>
+<p class="watch_story_repeat">▢ 	Watch Greek Easy Story <a href="https://www.youtube.com/watch?v=oKjaCGJ5uBc" target="_blank" rel="noopener noreferrer">Story 7 - The Small Boy - Ὁ παῖς ὁ μικρός.</a> (3:15) repeating aloud.</p>
+<p class="review_game">▢ 	Watch review video, <a href="https://www.youtube.com/watch?v=GzePYig9FZo" target="_blank" rel="noopener noreferrer">Quiz for Lessons 39 &amp; 40</a> (9:55), and try to respond before hearing the answer.</p>
+
+
+<p class="total_time">Approximate Amount of Time: 31:08</p>
+
+<p class="more">▢ 	More Lessons Are Coming!</p>
+
+<p class="longest">▢ 	Longest Study Day (mm:ss): 59:53</p>
+<p class="shortest">▢ 	Shortest Study Day (mm:ss): 31:08</p>
+<p class="average">▢ 	Average Study Day (mm:ss): 50:58</p>
+<p class="total_days">▢ 	Total Number of Study Days: 60</p>
+<p class="total_time">▢ 	Total Study Time (hh:mm:ss): 50:58:13</p>
+
+	<script>
+	document.querySelectorAll('a').forEach(link => { // make links open in a new tab
+	  link.setAttribute('target', '_blank');
+	  link.setAttribute('rel', 'noopener noreferrer');
+	});
+	</script>
+	
+
+</div>
+  <script>
+  
+  ////////////////////////////////////////////////
+  // Cookies
+  ////////////////////////////////////////////////
+  function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        var expires = "expires="+d.toUTCString();
+  //~   console.log("Setting cookie " + cname + " to " + cvalue);
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                }
+        }
+        return "";
+  }
+  function get_cookies_and_set_values() {
+        set_value_from_cookie('learning_program', 'learning_program');
+        set_value_from_cookie('learning_program_time', 'time');
+        set_value_from_cookie('learning_program_language', 'lang');
+  }
+  function set_value_from_cookie(cookie_name, elem_id) {
+        var val = getCookie(cookie_name);
+        if (val != '') {
+                var e = document.getElementById(elem_id);
+                e.value = val;
+  //~             console.log("Setting " + elem_id + " from cookie " + cookie_name + " value=" + val);
+        }
+  }
+  function set_checkbox_from_cookie(cookie_name, elem_id) {
+        var val = getCookie(cookie_name);
+        if (val != '') {
+                var e = document.getElementById(elem_id);
+                e.checked = (val == 'true');
+  //~             console.log("Setting " + elem_id + " from cookie " + cookie_name + " value=" + val);
+        }
+  }
+//~   function set_cookie_from_checkbox(elem_id, cookie_name) {
+//~         e = document.getElementById(elem_id);
+//~         setCookie(cookie_name, e.checked, 365);
+//~   //~     console.log("Setting cookie " + cookie_name + " from element " + elem_id + " value=" + e.checked);
+//~   }
+  function set_cookie_from_value(elem_id, cookie_name) { // this happens when the user changes a value
+        e = document.getElementById(elem_id);
+        setCookie(cookie_name, e.value, 365);
+  //~     console.log("Setting cookie " + cookie_name + " from element " + elem_id + " value=" + e.value);
+      if (elem_id == 'lang') {
+            setLanguage();
+      }
+      if (elem_id == 'learning_program') {
+            var e = document.getElementById("learning_program");
+            var learning_program = e.value;
+            changeFavicon(learning_program == "Aleph" ? "./images/cropped-Aleph_with_Beth-logo-beth-transparent-1-32x32.png" : "./images/cropped-alpha-with-angela-logo-transparent-a-square-32x32.png");
+      }
+      load_from_page();
+  }
+
+  ////////////////////////////////////////////////
+  //  functions to load a page and print
+  ////////////////////////////////////////////////
+  function load_from_page() {
+        var e = document.getElementById("learning_program");
+        var learning_program = e.value;
+        console.log("Learning program=" + learning_program);
+        var learning_program_abbr = (learning_program == "Aleph") ? "AWB" : "AWA";
+        
+        e = document.getElementById("lang");
+        lang = e.value;
+        console.log("load_from_page lang=" + lang);
+        
+        e = document.getElementById("time");
+        var time = e.options[e.selectedIndex].text;
+        
+        var phrase_file = learning_program_abbr + lang + ".txt";
+        var vid_file = learning_program_abbr + 'Videos.tsv';
+        var opts, out_file;
+        out_file = "./html/" + learning_program_abbr + "Sched_T" + time.substr(0, 2) + "_" + lang + ".htm";
+        opts = '&t=' + time + '&v=' + vid_file + '&o=' + out_file + '&f=' + phrase_file +  '&l=' + lang + '&c=' + learning_program;
+        console.log(opts);
+        generate(opts, out_file);
+  }
+
+  function generate(opts, file_to_open) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        if (this.responseText.includes("ERROR:")) {
+                              alert(this.responseText.replaceAll("<br>", "\n"));
+                        } else {
+                              console.log(this.responseText);
+  //~                             openInNewTab(file_to_open);
+                              openInDiv(file_to_open);
+                        }
+                }
+        };
+        var versionUpdate = (new Date()).getTime();  // force update
+  //~     console.log("Opts: " + opts);
+        $("#display").text("");
+        xhttp.open("POST", "generate.php?rnd=" + versionUpdate + opts, true);
+        xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhttp.send("msg=test");
+  }
+
+//~   function openInNewTab(href) { // opens the output file in a new tab
+//~   Object.assign(document.createElement('a'), {
+//~     target: '_blank',
+//~     rel: 'noopener noreferrer',
+//~     href: href,
+//~   }).click();
+//~   }
+
+  function openInDiv(href) { // opens the output file in the display div
+        var e = document.getElementById("learning_program");
+        var learning_program = e.value;
+        var learning_program_abbr = (learning_program == "Aleph") ? "AWB" : "AWA";
+        console.log("learning_program=" + learning_program + " abbr=" + learning_program_abbr);
+        
+        e = document.getElementById("lang");
+        var lang = e.value;
+        lang = lang.replace(' ', '%20'); // can't have spaces in url
+        
+        e = document.getElementById("time");
+        var time = e.options[e.selectedIndex].text.substr(0, 2);
+        
+        var versionUpdate = (new Date()).getTime();  // force update
+
+        $("#display").on('change', function() {
+//~                 $(window).on('load', function() {
+                console.log('Display has loaded!');
+        });
+        console.log("loading ./html/" + learning_program_abbr + "Sched_T" + time + "_" + lang + ".htm" + "?rnd=" + versionUpdate);
+        $("#display").load("./html/" + learning_program_abbr + "Sched_T" + time + "_" + lang + ".htm" + "?rnd=" + versionUpdate);
+        console.log('Display has loaded!');
+  }
+
+  function printLearningSchedule() {
+        $("#section_header").hide();
+        window.print();
+        $("#section_header").show();
+  }
+  
+  function copyLearningSchedule() {
+      var dsply = document.getElementById("display");
+      selectText(dsply);
+      try {
+          var successful = document.execCommand('copy');
+          var msg = successful ? 'successful' : 'unsuccessful';
+          alert(localization[lang]['copied']);
+      } catch (err) {
+          alert('Unable to copy, error : ' + err.message);
+      }
+      clearSelection();
+  }
+  function selectText(element) {
+        var doc = document
+            , text = element
+            , range, selection
+        ;
+        if (doc.body.createTextRange) { //ms
+            range = doc.body.createTextRange();
+            range.moveToElementText(text);
+            range.select();
+        } else if (window.getSelection) { //all others
+            selection = window.getSelection();
+            range = doc.createRange();
+            range.selectNodeContents(text);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+  }
+  function clearSelection() {
+       if (window.getSelection) {window.getSelection().removeAllRanges();}
+       else if (document.selection) {document.selection.empty();}
+  }
+//~   function selectLearningSchedule() {
+//~       var dsply = document.getElementById("display");
+//~       selectText(dsply);
+//~   }
+  
+//~   function download_file(fileURL, fileName) {
+//~       var link = document.createElement('a');
+//~       link.href = fileURL;
+//~       link.download = fileName;
+//~       document.body.appendChild(link);
+//~       link.click();
+//~       document.body.removeChild(link);
+//~   }
+
+//~   function downloadPDF() {
+//~         var e = document.getElementById("learning_program");
+//~         var learning_program = e.value;
+//~         var learning_program_abbr = (learning_program == "Aleph") ? "AWB" : "AWA";
+//~         
+//~         e = document.getElementById("lang");
+//~         var lang = e.value;
+//~         
+//~         e = document.getElementById("time");
+//~         var time = e.options[e.selectedIndex].text.substr(0, 2);
+//~         
+//~         var versionUpdate = (new Date()).getTime();  // force update
+
+//~         $("#display").on('change', function() {
+//~ //                 $(window).on('load', function() {
+//~                 console.log('Display has loaded!');
+//~         });
+//~         download_file("./pdf/" + learning_program + "Sched_T" + time + "_" + lang + ".pdf" + "?rnd=" + versionUpdate,  learning_program + "Sched_T" + time + "_" + lang + ".pdf");
+//~ //         $("#display").load("./pdf/" + learning_program + "Sched_T" + time + "_" + lang + ".pdf" + "?rnd=" + versionUpdate);
+//~ //         console.log('Display has loaded!');
+//~   }
+  
+  // functions to set the text of each of the fields of this page according to language
+  function setLanguagesSelector(lang) {
+      var options_str = "";
+
+     Object.keys(localization).forEach((element, index, array) => {
+            options_str += '<option value="' + element + '">' + localization[lang][element.toLowerCase()] + '</option>';
+      });
+      var e = document.getElementById("lang");
+      e.innerHTML = options_str;
+      e.value = lang;
+  }
+    
+  function setLearningProgramSelector(lang) {
+      var e = document.getElementById("learning_program");
+      var program = e.value;
+      var options_str = "";
+      options_str += '<option value="Aleph">' + localization[lang]['Aleph'] + '</option>';
+      options_str += '<option value="Alpha">' + localization[lang]['Alpha'] + '</option>';
+      e.innerHTML = options_str;
+      e.value = program;
+      changeFavicon(program == "Aleph" ? "./images/cropped-Aleph_with_Beth-logo-beth-transparent-1-32x32.png" : "./images/cropped-alpha-with-angela-logo-transparent-a-square-32x32.png");
+  }
+    
+  function setLanguage() {
+        // set the text for each label and select element based on the language selected
+        var e = document.getElementById("lang");
+        var lang = e.value;
+        $('#lang_label').text(localization[lang]['language']);
+        $('#time_per_day_label').text(localization[lang]['timePerDay']);
+        $('#learning_program_label').text(localization[lang]['Learning program']);
+//~         $('#load_button').text(localization[lang]['load']);
+        $('#print_button').text(localization[lang]['print']);
+        $('#copy_button').text(localization[lang]['copy']);
+//~         $('#download_PDF_button').text(localization[lang]['downloadPDF']);
+        $('#title1').text(localization[lang]['title1']);
+        $('#title2').text(localization[lang]['title2']);
+        setLanguagesSelector(lang);
+        setLearningProgramSelector(lang);
+        e = document.body;
+        e.setAttribute('dir', localization[lang]['direction'] == 'RTL' ? 'rtl' : 'ltr');
+  }
+  function changeFavicon(src) {
+      var link = document.createElement('link'),
+            oldLink = document.getElementById('dynamic-favicon');
+      link.id = 'dynamic-favicon';
+      link.rel = 'shortcut icon';
+      link.href = src;
+      if (oldLink) {
+            document.head.removeChild(oldLink);
+      }
+      document.head.appendChild(link);
+  }
+
+  // when the page is loaded get the values of each parameter from cookies they are stored in
+  setLanguage(); // called the first time just to set things up for the cookies
+  get_cookies_and_set_values();
+  // set the text based on the language that we now know
+  setLanguage();
+  // load the page. Subsequent loads will be done anytime a parameter changes.
+  load_from_page();
+  
+  document.head = document.head || document.getElementsByTagName('head')[0];
+</script>
+
+
+</body></html>
