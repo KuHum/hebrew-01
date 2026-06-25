@@ -468,6 +468,9 @@
         debounceMs: 300,
     };
 
+    // Your Cloudflare Worker URL (already deployed)
+    const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
+
     const LANGUAGES = [
         "Afrikaans","Albanian","Amharic","Arabic","Assamese","Bengali","Burmese","Cebuano","Croatian","Dutch",
         "English","Farsi","Finnish","French","Fulfulde","German","Greek","Gujarati","Hausa","Hebrew","Hindi",
@@ -476,8 +479,6 @@
         "Serbian","Sindhi","Spanish","Swahili","Swedish","Tagalog","Tamil","Telugu","Thai","Tok Pisin",
         "Turkish","Vietnamese","Urdu"
     ];
-
-    const CORS_PROXY = 'https://corsproxy.io/?';
 
     let dom = {};
     function cacheDomReferences() {
@@ -714,7 +715,7 @@
         const prog = settings.prog;
         const time = settings.time;
         const lang = encodeURIComponent(settings.lang);
-        return `https://freehebrew.online/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
+        return `https://leekehlerdesign.ca/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
     }
 
     function buildLocalUrl(settings) {
@@ -725,20 +726,22 @@
     }
 
     async function fetchWithFallback(settings) {
-        // 1) Try via CORS proxy (primary method)
+        const directUrl = buildScheduleUrl(settings);
+
+        // 1) Primary: your own CORS worker (reliable, production-grade)
         try {
-            const proxyUrl = CORS_PROXY + encodeURIComponent(buildScheduleUrl(settings));
+            const proxyUrl = CORS_WORKER + encodeURIComponent(directUrl);
             const resp = await fetch(proxyUrl);
             if (resp.ok) return await resp.text();
         } catch(e) { /* ignore */ }
 
-        // 2) Try direct fetch (in case CORS is later enabled)
+        // 2) Direct attempt (in case CORS is ever enabled on the server)
         try {
-            const resp = await fetch(buildScheduleUrl(settings));
+            const resp = await fetch(directUrl);
             if (resp.ok) return await resp.text();
         } catch(e) { /* ignore */ }
 
-        // 3) Try local file
+        // 3) Local file fallback
         try {
             const localUrl = buildLocalUrl(settings);
             const resp = await fetch(localUrl);
@@ -826,7 +829,7 @@
                 window._currentWeeksData = JSON.parse(cached);
                 renderApp(window._currentWeeksData, loadTaskStates());
             } else {
-                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://freehebrew.online/LearningSchedule/" target="_blank">here</a> and place it in the <code>./html/</code> folder of your app.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in the <code>./html/</code> folder of your app.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
                 updateTotalProgress(null, {});
             }
         }
