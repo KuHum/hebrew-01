@@ -468,7 +468,7 @@
         debounceMs: 300,
     };
 
-    // Your Cloudflare Worker URL (already deployed)
+    // Your Cloudflare Worker URL
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
 
     const LANGUAGES = [
@@ -701,7 +701,7 @@
         };
         localStorage.setItem('hebrew-schedule-settings', JSON.stringify(settings));
         closeSettingsModal();
-        fetchAndRenderSchedule(true);
+        fetchAndRenderSchedule(true);   // force refresh, no cache fallback
     }
     function getScheduleSettings() {
         const def = { lang: 'English', prog: 'AWB', time: '90' };
@@ -728,14 +728,14 @@
     async function fetchWithFallback(settings) {
         const directUrl = buildScheduleUrl(settings);
 
-        // 1) Primary: your own CORS worker (reliable, production-grade)
+        // 1) Your Cloudflare Worker
         try {
             const proxyUrl = CORS_WORKER + encodeURIComponent(directUrl);
             const resp = await fetch(proxyUrl);
             if (resp.ok) return await resp.text();
         } catch(e) { /* ignore */ }
 
-        // 2) Direct attempt (in case CORS is ever enabled on the server)
+        // 2) Direct (in case CORS ever enabled)
         try {
             const resp = await fetch(directUrl);
             if (resp.ok) return await resp.text();
@@ -803,6 +803,7 @@
         const CACHE_KEY = 'hebrew-parsed-schedule';
         const CACHE_URL_KEY = 'hebrew-schedule-url';
 
+        // If not forced and we have a cached version for the exact same URL, use it
         if (!force) {
             const cachedUrl = localStorage.getItem(CACHE_URL_KEY);
             const cached = localStorage.getItem(CACHE_KEY);
@@ -815,21 +816,42 @@
             }
         }
 
+        // Show loading state
+        dom.mainContent.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading schedule…</p></div>';
+
         try {
             const html = await fetchWithFallback(settings);
             const weeks = parseScheduleHTML(html);
             window._currentWeeksData = weeks;
+            // Cache the new schedule
             localStorage.setItem(CACHE_KEY, JSON.stringify(weeks));
             localStorage.setItem(CACHE_URL_KEY, url);
             renderApp(weeks, loadTaskStates());
         } catch(err) {
             console.error('Schedule fetch failed', err);
-            const cached = localStorage.getItem(CACHE_KEY);
-            if (cached) {
-                window._currentWeeksData = JSON.parse(cached);
-                renderApp(window._currentWeeksData, loadTaskStates());
+            // If we forced a refresh and it failed, DO NOT fall back to old cache; show error
+            if (force) {
+                dom.mainContent.innerHTML = `<div class="error-state">
+                    <div class="error-icon">📡</div>
+                    <p>Unable to load the new schedule.</p>
+                    <p>Please check your internet connection or try again later.</p>
+                    <p style="font-size:0.8rem">You can also download the file from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in <code>./html/</code>.</p>
+                    <button class="retry-btn" onclick="location.reload()">Retry</button>
+                </div>`;
+                updateTotalProgress(null, {});
             } else {
-                dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in the <code>./html/</code> folder of your app.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                // Not forced: try to use the old cached schedule (if any)
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    try {
+                        window._currentWeeksData = JSON.parse(cached);
+                        renderApp(window._currentWeeksData, loadTaskStates());
+                    } catch(e2) {
+                        dom.mainContent.innerHTML = `<div class="error-state"><p>Failed to load saved schedule.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                    }
+                } else {
+                    dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in the <code>./html/</code> folder.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+                }
                 updateTotalProgress(null, {});
             }
         }
