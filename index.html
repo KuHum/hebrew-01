@@ -736,20 +736,13 @@
 
     // Migrate old single‑user data to default "Student"
     function migrateOldDataIfNeeded() {
-        const oldTaskKey = CONFIG.storageKey; // 'aleph-beth-task-states'
-        const oldBaseline = 'hebrewBaselineTotalDays';
-        const oldHighest = 'hebrewHighestLevel';
-        const oldCelebrated = 'hebrewLastCelebratedLevel';
-        const oldGrad = 'hebrewGraduationCelebrated';
-
+        const oldTaskKey = CONFIG.storageKey;
         if (localStorage.getItem(oldTaskKey) !== null) {
-            // Check if user list already contains Student
             let users = getUserList();
             if (!users.includes(DEFAULT_USER)) {
                 users.push(DEFAULT_USER);
                 setUserList(users);
             }
-            // Move data to user-Student- prefixed keys
             const userPrefix = 'user-Student-';
             const states = localStorage.getItem(oldTaskKey);
             localStorage.setItem(userPrefix + 'aleph-beth-task-states', states);
@@ -763,7 +756,6 @@
                 }
             });
         }
-        // Ensure current user exists in list
         let users = getUserList();
         if (users.length === 0) {
             users = [DEFAULT_USER];
@@ -777,7 +769,6 @@
         }
     }
 
-    // Load task states for current user
     function loadTaskStates() {
         const key = getUserStorageKey('aleph-beth-task-states');
         try {
@@ -825,7 +816,6 @@
         saveTaskStates(states);
     }
 
-    // Per‑user progress keys
     function getPerUserKey(base) {
         return getUserStorageKey(base);
     }
@@ -858,7 +848,6 @@
         divider.className = 'user-dropdown-divider';
         dropdown.appendChild(divider);
 
-        // Edit name
         const editItem = document.createElement('div');
         editItem.className = 'user-dropdown-item';
         editItem.innerHTML = `
@@ -871,7 +860,6 @@
         });
         dropdown.appendChild(editItem);
 
-        // Add user
         const addItem = document.createElement('div');
         addItem.className = 'user-dropdown-item';
         addItem.innerHTML = `
@@ -884,7 +872,6 @@
         });
         dropdown.appendChild(addItem);
 
-        // Remove user (only if more than one)
         if (users.length > 1) {
             const removeItem = document.createElement('div');
             removeItem.className = 'user-dropdown-item';
@@ -923,16 +910,12 @@
         setCurrentUser(name);
         updateUserPill();
         const states = loadTaskStates();
-        const weeksData = window._currentWeeksData;
-        if (weeksData) renderApp(weeksData, states);
+        refreshUIInPlace(states);   // ⚡ instant update, no DOM rebuild
     }
 
     function removeCurrentUser() {
         const users = getUserList().filter(u => u !== currentUser);
-        if (users.length === 0) {
-            users.push(DEFAULT_USER);
-        }
-        // Clear data for removed user (optional)
+        if (users.length === 0) users.push(DEFAULT_USER);
         const prefix = `user-${currentUser}-`;
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith(prefix)) localStorage.removeItem(key);
@@ -941,12 +924,11 @@
         setCurrentUser(users[0]);
         updateUserPill();
         const states = loadTaskStates();
-        const weeksData = window._currentWeeksData;
-        if (weeksData) renderApp(weeksData, states);
+        refreshUIInPlace(states);
     }
 
     // ---------- User name modal ----------
-    let userModalMode = 'edit'; // 'edit' or 'add'
+    let userModalMode = 'edit';
     let userModalTargetUser = '';
 
     function openUserModal(mode, user = '') {
@@ -970,26 +952,17 @@
 
     function saveUserModal() {
         const name = dom.userNameInput.value.trim();
-        if (!name) {
-            alert('Name cannot be empty.');
-            return;
-        }
-        if (name.length > 30) {
-            alert('Name too long.');
-            return;
-        }
+        if (!name) { alert('Name cannot be empty.'); return; }
+        if (name.length > 30) { alert('Name too long.'); return; }
         let users = getUserList();
         if (userModalMode === 'edit') {
             if (name !== userModalTargetUser && users.includes(name)) {
-                alert('A user with that name already exists.');
-                return;
+                alert('A user with that name already exists.'); return;
             }
-            // Rename user: update list, move localStorage keys
             const index = users.indexOf(userModalTargetUser);
             if (index !== -1) {
                 users[index] = name;
                 setUserList(users);
-                // Move all user-<old>- keys to user-<new>-
                 const oldPrefix = `user-${userModalTargetUser}-`;
                 const newPrefix = `user-${name}-`;
                 Object.keys(localStorage).forEach(key => {
@@ -1006,14 +979,13 @@
             }
         } else {
             if (users.includes(name)) {
-                alert('A user with that name already exists.');
-                return;
+                alert('A user with that name already exists.'); return;
             }
             users.push(name);
             setUserList(users);
         }
         closeUserModal();
-        renderUserDropdown(); // refresh if open
+        renderUserDropdown();
     }
 
     // ---------- Utility ----------
@@ -1181,6 +1153,30 @@
         buildFallbackMap(weeksData);
     }
 
+    function refreshUIInPlace(savedStates) {
+        // Update all checkboxes, fillable inputs, task-item completed classes, progress rings, and total progress
+        document.querySelectorAll('.task-checkbox').forEach(cb => {
+            const taskId = cb.getAttribute('data-task-id');
+            const state = savedStates[taskId];
+            cb.checked = state ? state.checked : false;
+        });
+        document.querySelectorAll('.fillable-input').forEach(inp => {
+            const taskId = inp.getAttribute('data-task-id');
+            const idx = parseInt(inp.getAttribute('data-blank-index'), 10);
+            const state = savedStates[taskId];
+            const val = (state && state.values && state.values[idx]) ? state.values[idx] : '';
+            inp.value = val;
+        });
+        document.querySelectorAll('.task-item').forEach(item => {
+            const cb = item.querySelector('.task-checkbox');
+            if (cb) {
+                if (cb.checked) item.classList.add('completed');
+                else item.classList.remove('completed');
+            }
+        });
+        refreshAllProgress();  // updates rings and total progress bar
+    }
+
     function buildFallbackMap(weeksData) {
         const map = {};
         weeksData.forEach(week => week.days.forEach(day => day.tasks.forEach(task => {
@@ -1307,11 +1303,8 @@
             else taskItem.classList.remove('completed');
         }
         setCheckboxState(taskId, checked);
-        debouncedRefreshProgress();
+        refreshAllProgress();   // immediate update, no debounce
     }
-
-    // Debounced progress refresh (200ms)
-    const debouncedRefreshProgress = debounce(refreshAllProgress, 200);
 
     // ---------- Progress ----------
     function calculateProgress(week, savedStates) {
@@ -1336,7 +1329,6 @@
         return { total, completed, percent: total>0 ? (completed/total)*100 : 0 };
     }
 
-    // --- Baseline & Level Logic (per user) ---
     function getCompletedDays(weeksData, savedStates) {
         let completedDays = 0;
         if (!weeksData) return 0;
@@ -1379,7 +1371,6 @@
         const percentForLevel = baselineTotalDays > 0 ? (completedDays / baselineTotalDays) * 100 : 0;
         const candidateLevel = getLevel(percentForLevel);
 
-        // Highest level stored per user to prevent demotion
         const highestKey = getPerUserKey('hebrewHighestLevel');
         let highestLevel = localStorage.getItem(highestKey) || 'Beginner';
         const levelsOrder = ['Beginner','Junior','Reader','Senior','Graduate'];
@@ -1391,7 +1382,6 @@
         dom.totalProgressBar.style.width = barPercent + '%';
         dom.progressInfo.textContent = `${highestLevel} · ${completedDays} Days Completed`;
 
-        // Show update note if curriculum expanded
         if (currentTotalDays > baselineTotalDays) {
             dom.baselineUpdateNote.classList.add('visible');
             dom.baselineUpdateNote.onclick = function() {
@@ -1410,7 +1400,6 @@
             dom.baselineUpdateNote.classList.remove('visible');
         }
 
-        // ── Celebrations ──
         const celebratedKey = getPerUserKey('hebrewLastCelebratedLevel');
         const gradKey = getPerUserKey('hebrewGraduationCelebrated');
         const lastCelebrated = localStorage.getItem(celebratedKey) || '';
@@ -1425,13 +1414,9 @@
                 dom.toastText.textContent = `You've reached ${highestLevel}!`;
                 dom.levelToast.classList.add('show');
                 localStorage.setItem(celebratedKey, highestLevel);
-                setTimeout(() => {
-                    dom.levelToast.classList.remove('show');
-                }, 3000);
+                setTimeout(() => dom.levelToast.classList.remove('show'), 3000);
             }
         }
-
-        dom.totalProgressSection.style.display = 'block';
     }
 
     function refreshAllProgress() {
@@ -1455,7 +1440,7 @@
         });
     }
 
-    // ---------- Export / Import (current user only) ----------
+    // ---------- Export / Import ----------
     function exportProgress() {
         const states = loadTaskStates();
         const fallbackMap = window._fallbackMap || {};
@@ -1503,7 +1488,7 @@
                     }
                 }
                 saveTaskStates(states);
-                renderApp(window._currentWeeksData, states);
+                refreshUIInPlace(states);
                 alert('Progress imported successfully.');
             } catch (err) {
                 alert('Failed to import progress. The file may be corrupted.');
@@ -1525,9 +1510,7 @@
                     return version;
                 }
             }
-        } catch (e) {
-            console.warn('Could not fetch version.txt', e);
-        }
+        } catch (e) { console.warn('Could not fetch version.txt', e); }
         return null;
     }
 
@@ -1548,10 +1531,7 @@
         const name = dom.feedbackName.value.trim();
         const email = dom.feedbackEmail.value.trim();
         const message = dom.feedbackTextarea.value.trim();
-        if (!name || !email || !message) {
-            alert('Please fill out all fields.');
-            return;
-        }
+        if (!name || !email || !message) { alert('Please fill out all fields.'); return; }
         dom.sendFeedbackBtn.disabled = true;
         dom.sendFeedbackBtn.innerHTML = `Sending…`;
         try {
@@ -1561,10 +1541,7 @@
             formData.append('email', email);
             formData.append('message', message);
             formData.append('subject', 'Learn Biblical Hebrew Feedback');
-            const response = await fetch('https://api.web3forms.com/submit', {
-                method: 'POST',
-                body: formData
-            });
+            const response = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData });
             const data = await response.json();
             if (data.success) {
                 alert('Thank you! Your message has been sent.');
@@ -1607,9 +1584,7 @@
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', () => {
-        dom.installBtn.classList.add('hidden');
-    });
+    window.addEventListener('appinstalled', () => { dom.installBtn.classList.add('hidden'); });
 
     // ---------- Network & Lessons Caching ----------
     async function fetchLessonsMarkdown() {
@@ -1621,10 +1596,7 @@
     async function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         try {
-            const reg = await navigator.serviceWorker.register('./sw.js', {
-                scope: './',
-                updateViaCache: 'none'
-            });
+            const reg = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker?.addEventListener('statechange', () => {
@@ -1648,7 +1620,6 @@
         const swPromise = registerServiceWorker();
         const savedStates = loadTaskStates();
 
-        // Performance: cache parsed lessons with version
         const CACHE_KEY = 'hebrew-parsed-lessons';
         const CACHE_VERSION_KEY = 'hebrew-parsed-version';
         let weeksData = null;
@@ -1656,31 +1627,24 @@
         const cachedVersion = localStorage.getItem(CACHE_VERSION_KEY);
         const cachedLessons = localStorage.getItem(CACHE_KEY);
 
-        if (version && cachedVersion === version && cachedLessons) {
-            // Use cached parsed data
-            try {
-                weeksData = JSON.parse(cachedLessons);
-            } catch (e) {
-                weeksData = null;
-            }
+        if (cachedLessons) {
+            try { weeksData = JSON.parse(cachedLessons); } catch (e) {}
         }
 
-        if (!weeksData) {
+        const shouldFetch = !weeksData || (version && cachedVersion !== version);
+
+        if (shouldFetch) {
             try {
                 const md = await fetchLessonsMarkdown();
                 weeksData = parseLessons(md);
-                // Cache only if we have a version
                 if (version) {
                     localStorage.setItem(CACHE_KEY, JSON.stringify(weeksData));
                     localStorage.setItem(CACHE_VERSION_KEY, version);
                 }
-            } catch(err) {
+            } catch (err) {
                 console.error('Failed to load lessons:', err);
-                // Attempt fallback to cached data even if version mismatch (offline)
-                if (cachedLessons) {
-                    try {
-                        weeksData = JSON.parse(cachedLessons);
-                    } catch (e2) {}
+                if (!weeksData && cachedLessons) {
+                    try { weeksData = JSON.parse(cachedLessons); } catch(e2) {}
                 }
                 if (!weeksData) {
                     dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p style="font-size:0.85rem;color:var(--text-muted);">${navigator.onLine?'<code>lessons.md</code> missing?':'Offline and no cache. Connect and retry.'}</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
@@ -1706,33 +1670,19 @@
         });
         dom.readMoreBtn.addEventListener('click', openOverlay);
         dom.aboutOverlayClose.addEventListener('click', closeOverlay);
-        dom.aboutOverlay.addEventListener('click', (e) => {
-            if (e.target === dom.aboutOverlay) closeOverlay();
-        });
+        dom.aboutOverlay.addEventListener('click', (e) => { if (e.target === dom.aboutOverlay) closeOverlay(); });
         dom.sendFeedbackBtn.addEventListener('click', sendFeedback);
         dom.installBtn.addEventListener('click', installApp);
-        dom.gradCloseBtn.addEventListener('click', () => {
-            dom.gradOverlay.classList.remove('visible');
-        });
-        dom.gradOverlay.addEventListener('click', (e) => {
-            if (e.target === dom.gradOverlay) dom.gradOverlay.classList.remove('visible');
-        });
+        dom.gradCloseBtn.addEventListener('click', () => dom.gradOverlay.classList.remove('visible'));
+        dom.gradOverlay.addEventListener('click', (e) => { if (e.target === dom.gradOverlay) dom.gradOverlay.classList.remove('visible'); });
 
-        // User pill & dropdown
-        dom.userPill.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleUserDropdown();
-        });
+        dom.userPill.addEventListener('click', (e) => { e.stopPropagation(); toggleUserDropdown(); });
         document.addEventListener('click', (e) => {
-            if (!dom.userPill.contains(e.target) && !dom.userDropdown.contains(e.target)) {
-                closeUserDropdown();
-            }
+            if (!dom.userPill.contains(e.target) && !dom.userDropdown.contains(e.target)) closeUserDropdown();
         });
         dom.userModalCancel.addEventListener('click', closeUserModal);
         dom.userModalSave.addEventListener('click', saveUserModal);
-        dom.userModalBackdrop.addEventListener('click', (e) => {
-            if (e.target === dom.userModalBackdrop) closeUserModal();
-        });
+        dom.userModalBackdrop.addEventListener('click', (e) => { if (e.target === dom.userModalBackdrop) closeUserModal(); });
     }
 
     window.addEventListener('online', () => {
@@ -1741,11 +1691,8 @@
             if (JSON.stringify(weeksData) !== JSON.stringify(window._currentWeeksData)) {
                 window._currentWeeksData = weeksData;
                 renderApp(weeksData, loadTaskStates());
-                // Update cache
                 const version = localStorage.getItem('hebrew-parsed-version');
-                if (version) {
-                    localStorage.setItem('hebrew-parsed-lessons', JSON.stringify(weeksData));
-                }
+                if (version) localStorage.setItem('hebrew-parsed-lessons', JSON.stringify(weeksData));
             }
         }).catch(() => {});
     });
