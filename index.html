@@ -1,3 +1,9 @@
+Here is the complete, robust `index.html`.  
+It **no longer** suggests manual downloads or tries local `./html/` files.  
+The **Retry button** simply re‑fetches the schedule without reloading the page.  
+**All buttons** are protected against stale cached HTML – they remain functional no matter what.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -468,7 +474,6 @@
         debounceMs: 300,
     };
 
-    // Your Cloudflare Worker URL
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
 
     const LANGUAGES = [
@@ -588,11 +593,12 @@
     }
     function getPerUserKey(base) { return getUserStorageKey(base); }
 
-    function updateUserPill() { dom.userPillName.textContent = currentUser; }
+    function updateUserPill() { if (dom.userPillName) dom.userPillName.textContent = currentUser; }
 
     function renderUserDropdown() {
         const users = getUserList();
         const dropdown = dom.userDropdown;
+        if (!dropdown) return;
         dropdown.innerHTML = '';
         users.forEach(user => {
             const item = document.createElement('div');
@@ -622,10 +628,10 @@
     }
 
     function toggleUserDropdown() {
-        if (dom.userDropdown.classList.contains('visible')) closeUserDropdown();
-        else { renderUserDropdown(); dom.userDropdown.classList.add('visible'); dom.userPill.classList.add('open'); }
+        if (dom.userDropdown && dom.userDropdown.classList.contains('visible')) closeUserDropdown();
+        else { renderUserDropdown(); if (dom.userDropdown) dom.userDropdown.classList.add('visible'); if (dom.userPill) dom.userPill.classList.add('open'); }
     }
-    function closeUserDropdown() { dom.userDropdown.classList.remove('visible'); dom.userPill.classList.remove('open'); }
+    function closeUserDropdown() { if (dom.userDropdown) dom.userDropdown.classList.remove('visible'); if (dom.userPill) dom.userPill.classList.remove('open'); }
 
     function switchUser(name) {
         if (name === currentUser) return;
@@ -647,14 +653,14 @@
     let userModalMode = 'edit', userModalTargetUser = '';
     function openUserModal(mode, user = '') {
         userModalMode = mode;
-        if (mode === 'edit') { dom.userModalTitle.textContent = 'Edit Name'; dom.userNameInput.value = user; userModalTargetUser = user; }
-        else { dom.userModalTitle.textContent = 'Add User'; dom.userNameInput.value = ''; userModalTargetUser = ''; }
-        dom.userModalBackdrop.classList.add('visible');
-        dom.userNameInput.focus();
+        if (mode === 'edit') { if (dom.userModalTitle) dom.userModalTitle.textContent = 'Edit Name'; if (dom.userNameInput) dom.userNameInput.value = user; userModalTargetUser = user; }
+        else { if (dom.userModalTitle) dom.userModalTitle.textContent = 'Add User'; if (dom.userNameInput) dom.userNameInput.value = ''; userModalTargetUser = ''; }
+        if (dom.userModalBackdrop) dom.userModalBackdrop.classList.add('visible');
+        if (dom.userNameInput) dom.userNameInput.focus();
     }
-    function closeUserModal() { dom.userModalBackdrop.classList.remove('visible'); }
+    function closeUserModal() { if (dom.userModalBackdrop) dom.userModalBackdrop.classList.remove('visible'); }
     function saveUserModal() {
-        const name = dom.userNameInput.value.trim();
+        const name = dom.userNameInput ? dom.userNameInput.value.trim() : '';
         if (!name) { alert('Name cannot be empty.'); return; }
         if (name.length > 30) { alert('Name too long.'); return; }
         let users = getUserList();
@@ -678,6 +684,7 @@
     }
 
     function populateLangDropdown() {
+        if (!dom.settingsLang) return;
         dom.settingsLang.innerHTML = '';
         LANGUAGES.forEach(lang => {
             const opt = document.createElement('option');
@@ -687,21 +694,21 @@
     }
     function openSettingsModal() {
         const s = getScheduleSettings();
-        dom.settingsLang.value = s.lang;
-        dom.settingsProg.value = s.prog;
-        dom.settingsTime.value = s.time;
-        dom.settingsModalBackdrop.classList.add('visible');
+        if (dom.settingsLang) dom.settingsLang.value = s.lang;
+        if (dom.settingsProg) dom.settingsProg.value = s.prog;
+        if (dom.settingsTime) dom.settingsTime.value = s.time;
+        if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.classList.add('visible');
     }
-    function closeSettingsModal() { dom.settingsModalBackdrop.classList.remove('visible'); }
+    function closeSettingsModal() { if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.classList.remove('visible'); }
     function saveSettingsModal() {
         const settings = {
-            lang: dom.settingsLang.value,
-            prog: dom.settingsProg.value,
-            time: dom.settingsTime.value
+            lang: dom.settingsLang ? dom.settingsLang.value : 'English',
+            prog: dom.settingsProg ? dom.settingsProg.value : 'AWB',
+            time: dom.settingsTime ? dom.settingsTime.value : '90'
         };
         localStorage.setItem('hebrew-schedule-settings', JSON.stringify(settings));
         closeSettingsModal();
-        fetchAndRenderSchedule(true);   // force refresh, no cache fallback
+        fetchAndRenderSchedule(true);
     }
     function getScheduleSettings() {
         const def = { lang: 'English', prog: 'AWB', time: '90' };
@@ -718,35 +725,34 @@
         return `https://leekehlerdesign.ca/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
     }
 
-    function buildLocalUrl(settings) {
-        const prog = settings.prog;
-        const time = settings.time;
-        const lang = encodeURIComponent(settings.lang);
-        return `./html/${prog}Sched_T${time}_${lang}.htm`;
+    async function fetchWithTimeout(url, timeoutMs = 12000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const resp = await fetch(url, { signal: controller.signal });
+            clearTimeout(timer);
+            return resp;
+        } catch (err) {
+            clearTimeout(timer);
+            throw err;
+        }
     }
 
     async function fetchWithFallback(settings) {
         const directUrl = buildScheduleUrl(settings);
 
-        // 1) Your Cloudflare Worker
+        // 1) Cloudflare Worker
         try {
             const proxyUrl = CORS_WORKER + encodeURIComponent(directUrl);
-            const resp = await fetch(proxyUrl);
+            const resp = await fetchWithTimeout(proxyUrl);
             if (resp.ok) return await resp.text();
-        } catch(e) { /* ignore */ }
+        } catch(e) { console.warn('Worker fetch failed', e); }
 
         // 2) Direct (in case CORS ever enabled)
         try {
-            const resp = await fetch(directUrl);
+            const resp = await fetchWithTimeout(directUrl);
             if (resp.ok) return await resp.text();
-        } catch(e) { /* ignore */ }
-
-        // 3) Local file fallback
-        try {
-            const localUrl = buildLocalUrl(settings);
-            const resp = await fetch(localUrl);
-            if (resp.ok) return await resp.text();
-        } catch(e) { /* ignore */ }
+        } catch(e) { console.warn('Direct fetch failed', e); }
 
         throw new Error('Could not load schedule.');
     }
@@ -803,7 +809,6 @@
         const CACHE_KEY = 'hebrew-parsed-schedule';
         const CACHE_URL_KEY = 'hebrew-schedule-url';
 
-        // If not forced and we have a cached version for the exact same URL, use it
         if (!force) {
             const cachedUrl = localStorage.getItem(CACHE_URL_KEY);
             const cached = localStorage.getItem(CACHE_KEY);
@@ -816,44 +821,26 @@
             }
         }
 
-        // Show loading state
-        dom.mainContent.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading schedule…</p></div>';
+        if (dom.mainContent) dom.mainContent.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading schedule…</p></div>';
 
         try {
             const html = await fetchWithFallback(settings);
             const weeks = parseScheduleHTML(html);
             window._currentWeeksData = weeks;
-            // Cache the new schedule
             localStorage.setItem(CACHE_KEY, JSON.stringify(weeks));
             localStorage.setItem(CACHE_URL_KEY, url);
             renderApp(weeks, loadTaskStates());
         } catch(err) {
-            console.error('Schedule fetch failed', err);
-            // If we forced a refresh and it failed, DO NOT fall back to old cache; show error
-            if (force) {
-                dom.mainContent.innerHTML = `<div class="error-state">
-                    <div class="error-icon">📡</div>
-                    <p>Unable to load the new schedule.</p>
-                    <p>Please check your internet connection or try again later.</p>
-                    <p style="font-size:0.8rem">You can also download the file from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in <code>./html/</code>.</p>
-                    <button class="retry-btn" onclick="location.reload()">Retry</button>
-                </div>`;
-                updateTotalProgress(null, {});
-            } else {
-                // Not forced: try to use the old cached schedule (if any)
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    try {
-                        window._currentWeeksData = JSON.parse(cached);
-                        renderApp(window._currentWeeksData, loadTaskStates());
-                    } catch(e2) {
-                        dom.mainContent.innerHTML = `<div class="error-state"><p>Failed to load saved schedule.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
-                    }
-                } else {
-                    dom.mainContent.innerHTML = `<div class="error-state"><div class="error-icon">📡</div><p>Unable to load schedule.</p><p>You can download the schedule from <a href="https://leekehlerdesign.ca/LearningSchedule/" target="_blank">the official scheduler</a> and place it in the <code>./html/</code> folder.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
-                }
-                updateTotalProgress(null, {});
-            }
+            console.error('Schedule load error:', err);
+            const errHtml = `<div class="error-state">
+                <div class="error-icon">📡</div>
+                <p>Unable to load schedule.</p>
+                <p>Check your connection or <button class="retry-btn" id="retryInlineBtn">Try Again</button></p>
+            </div>`;
+            if (dom.mainContent) dom.mainContent.innerHTML = errHtml;
+            updateTotalProgress(null, {});
+            const retryBtn = document.getElementById('retryInlineBtn');
+            if (retryBtn) retryBtn.addEventListener('click', () => fetchAndRenderSchedule(true));
         }
     }
 
@@ -884,9 +871,12 @@
     let collapseState = { weeks: {}, days: {} };
 
     function renderApp(weeksData, savedStates) {
+        if (!dom.mainContent) return;
         dom.mainContent.innerHTML = '';
         if (!weeksData || weeksData.length === 0) {
-            dom.mainContent.innerHTML = `<div class="error-state"><p>No schedule data found.</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>`;
+            dom.mainContent.innerHTML = `<div class="error-state"><p>No schedule data found.</p><button class="retry-btn" id="retryEmptyBtn">Retry</button></div>`;
+            const retryBtn = document.getElementById('retryEmptyBtn');
+            if (retryBtn) retryBtn.addEventListener('click', () => fetchAndRenderSchedule(true));
             updateTotalProgress(weeksData, savedStates);
             return;
         }
@@ -1052,21 +1042,25 @@
         const levelsOrder = ['Beginner','Junior','Reader','Senior','Graduate'];
         if (levelsOrder.indexOf(candidateLevel) > levelsOrder.indexOf(highestLevel)) { highestLevel = candidateLevel; localStorage.setItem(highestKey, highestLevel); }
 
-        dom.totalProgressBar.style.width = barPercent + '%';
-        dom.progressInfo.textContent = `${highestLevel} · ${completedDays} Days Completed`;
+        if (dom.totalProgressBar) dom.totalProgressBar.style.width = barPercent + '%';
+        if (dom.progressInfo) dom.progressInfo.textContent = `${highestLevel} · ${completedDays} Days Completed`;
 
         if (currentTotalDays > baselineTotalDays) {
-            dom.baselineUpdateNote.classList.add('visible');
-            dom.baselineUpdateNote.onclick = function() {
-                localStorage.setItem(baselineKey, currentTotalDays);
-                const newPercent = (completedDays / currentTotalDays) * 100;
-                const newCandidate = getLevel(newPercent);
-                if (levelsOrder.indexOf(newCandidate) > levelsOrder.indexOf(highestLevel)) { highestLevel = newCandidate; localStorage.setItem(highestKey, highestLevel); }
-                dom.totalProgressBar.style.width = Math.min(100, newPercent) + '%';
-                dom.progressInfo.textContent = `${highestLevel} · ${completedDays} Days Completed`;
-                dom.baselineUpdateNote.classList.remove('visible');
-            };
-        } else dom.baselineUpdateNote.classList.remove('visible');
+            if (dom.baselineUpdateNote) {
+                dom.baselineUpdateNote.classList.add('visible');
+                dom.baselineUpdateNote.onclick = function() {
+                    localStorage.setItem(baselineKey, currentTotalDays);
+                    const newPercent = (completedDays / currentTotalDays) * 100;
+                    const newCandidate = getLevel(newPercent);
+                    if (levelsOrder.indexOf(newCandidate) > levelsOrder.indexOf(highestLevel)) { highestLevel = newCandidate; localStorage.setItem(highestKey, highestLevel); }
+                    if (dom.totalProgressBar) dom.totalProgressBar.style.width = Math.min(100, newPercent) + '%';
+                    if (dom.progressInfo) dom.progressInfo.textContent = `${highestLevel} · ${completedDays} Days Completed`;
+                    dom.baselineUpdateNote.classList.remove('visible');
+                };
+            }
+        } else {
+            if (dom.baselineUpdateNote) dom.baselineUpdateNote.classList.remove('visible');
+        }
 
         const celebratedKey = getPerUserKey('hebrewLastCelebratedLevel');
         const gradKey = getPerUserKey('hebrewGraduationCelebrated');
@@ -1075,14 +1069,14 @@
 
         if (highestLevel !== lastCelebrated) {
             if (highestLevel === 'Graduate' && !graduationDone) {
-                dom.gradOverlay.classList.add('visible');
+                if (dom.gradOverlay) dom.gradOverlay.classList.add('visible');
                 localStorage.setItem(gradKey, 'true');
                 localStorage.setItem(celebratedKey, 'Graduate');
             } else if (highestLevel !== 'Graduate') {
-                dom.toastText.textContent = `You've reached ${highestLevel}!`;
-                dom.levelToast.classList.add('show');
+                if (dom.toastText) dom.toastText.textContent = `You've reached ${highestLevel}!`;
+                if (dom.levelToast) dom.levelToast.classList.add('show');
                 localStorage.setItem(celebratedKey, highestLevel);
-                setTimeout(() => dom.levelToast.classList.remove('show'), 3000);
+                setTimeout(() => { if (dom.levelToast) dom.levelToast.classList.remove('show'); }, 3000);
             }
         }
     }
@@ -1147,21 +1141,20 @@
             const resp = await fetch('./version.txt', { headers: { 'Cache-Control': 'no-cache' } });
             if (resp.ok) {
                 const v = (await resp.text()).trim();
-                if (v) { dom.footerVersion.textContent = v; dom.overlayVersionNumber.textContent = v; return v; }
+                if (v) { if (dom.footerVersion) dom.footerVersion.textContent = v; if (dom.overlayVersionNumber) dom.overlayVersionNumber.textContent = v; return v; }
             }
         } catch(e) {}
         return null;
     }
 
-    function openOverlay() { dom.aboutOverlay.classList.add('visible'); dom.aboutOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
-    function closeOverlay() { dom.aboutOverlay.classList.remove('visible'); dom.aboutOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+    function openOverlay() { if (dom.aboutOverlay) { dom.aboutOverlay.classList.add('visible'); dom.aboutOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
+    function closeOverlay() { if (dom.aboutOverlay) { dom.aboutOverlay.classList.remove('visible'); dom.aboutOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
     async function sendFeedback() {
-        const name = dom.feedbackName.value.trim();
-        const email = dom.feedbackEmail.value.trim();
-        const message = dom.feedbackTextarea.value.trim();
+        const name = dom.feedbackName ? dom.feedbackName.value.trim() : '';
+        const email = dom.feedbackEmail ? dom.feedbackEmail.value.trim() : '';
+        const message = dom.feedbackTextarea ? dom.feedbackTextarea.value.trim() : '';
         if (!name||!email||!message) { alert('Please fill out all fields.'); return; }
-        dom.sendFeedbackBtn.disabled = true;
-        dom.sendFeedbackBtn.innerHTML = 'Sending…';
+        if (dom.sendFeedbackBtn) { dom.sendFeedbackBtn.disabled = true; dom.sendFeedbackBtn.innerHTML = 'Sending…'; }
         try {
             const fd = new FormData();
             fd.append('access_key', CONFIG.web3formsKey);
@@ -1171,18 +1164,18 @@
             fd.append('subject', 'Learn Biblical Hebrew Feedback');
             const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd });
             const d = await r.json();
-            if (d.success) { alert('Thank you!'); dom.feedbackName.value = ''; dom.feedbackEmail.value = ''; dom.feedbackTextarea.value = ''; }
+            if (d.success) { alert('Thank you!'); if (dom.feedbackName) dom.feedbackName.value = ''; if (dom.feedbackEmail) dom.feedbackEmail.value = ''; if (dom.feedbackTextarea) dom.feedbackTextarea.value = ''; }
             else alert('Something went wrong.');
         } catch(e) { alert('Network error.'); }
-        finally { dom.sendFeedbackBtn.disabled = false; dom.sendFeedbackBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L2 8.66667L11.5833 12.4167M22 2L15.3333 22L11.5833 12.4167M22 2L11.5833 12.4167"/></svg> Send Message`; }
+        finally { if (dom.sendFeedbackBtn) { dom.sendFeedbackBtn.disabled = false; dom.sendFeedbackBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L2 8.66667L11.5833 12.4167M22 2L15.3333 22L11.5833 12.4167M22 2L11.5833 12.4167"/></svg> Send Message`; } }
     }
 
     let deferredPrompt = null;
-    function handleBeforeInstallPrompt(e) { e.preventDefault(); deferredPrompt = e; dom.installBtn.classList.remove('hidden'); }
-    async function installApp() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome==='accepted') { dom.installBtn.classList.add('hidden'); deferredPrompt = null; } }
-    function checkInstalled() { if (window.matchMedia('(display-mode: standalone)').matches) dom.installBtn.classList.add('hidden'); }
+    function handleBeforeInstallPrompt(e) { e.preventDefault(); deferredPrompt = e; if (dom.installBtn) dom.installBtn.classList.remove('hidden'); }
+    async function installApp() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome==='accepted') { if (dom.installBtn) dom.installBtn.classList.add('hidden'); deferredPrompt = null; } }
+    function checkInstalled() { if (window.matchMedia('(display-mode: standalone)').matches) { if (dom.installBtn) dom.installBtn.classList.add('hidden'); } }
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', () => { dom.installBtn.classList.add('hidden'); });
+    window.addEventListener('appinstalled', () => { if (dom.installBtn) dom.installBtn.classList.add('hidden'); });
 
     async function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
@@ -1210,25 +1203,25 @@
     }
 
     function attachGlobalEventListeners() {
-        dom.exportBtn.addEventListener('click', exportProgress);
-        dom.importBtn.addEventListener('click', () => dom.importFileInput.click());
-        dom.importFileInput.addEventListener('change', e => { if(e.target.files.length>0) { importProgress(e.target.files[0]); e.target.value=''; } });
-        dom.readMoreBtn.addEventListener('click', openOverlay);
-        dom.aboutOverlayClose.addEventListener('click', closeOverlay);
-        dom.aboutOverlay.addEventListener('click', e => { if(e.target===dom.aboutOverlay) closeOverlay(); });
-        dom.sendFeedbackBtn.addEventListener('click', sendFeedback);
-        dom.installBtn.addEventListener('click', installApp);
-        dom.gradCloseBtn.addEventListener('click', () => dom.gradOverlay.classList.remove('visible'));
-        dom.gradOverlay.addEventListener('click', e => { if(e.target===dom.gradOverlay) dom.gradOverlay.classList.remove('visible'); });
-        dom.userPill.addEventListener('click', e => { e.stopPropagation(); toggleUserDropdown(); });
-        document.addEventListener('click', e => { if(!dom.userPill.contains(e.target) && !dom.userDropdown.contains(e.target)) closeUserDropdown(); });
-        dom.userModalCancel.addEventListener('click', closeUserModal);
-        dom.userModalSave.addEventListener('click', saveUserModal);
-        dom.userModalBackdrop.addEventListener('click', e => { if(e.target===dom.userModalBackdrop) closeUserModal(); });
-        dom.settingsBtn.addEventListener('click', openSettingsModal);
-        dom.settingsModalCancel.addEventListener('click', closeSettingsModal);
-        dom.settingsModalSave.addEventListener('click', saveSettingsModal);
-        dom.settingsModalBackdrop.addEventListener('click', e => { if(e.target===dom.settingsModalBackdrop) closeSettingsModal(); });
+        if (dom.exportBtn) dom.exportBtn.addEventListener('click', exportProgress);
+        if (dom.importBtn) dom.importBtn.addEventListener('click', () => { if (dom.importFileInput) dom.importFileInput.click(); });
+        if (dom.importFileInput) dom.importFileInput.addEventListener('change', e => { if(e.target.files.length>0) { importProgress(e.target.files[0]); e.target.value=''; } });
+        if (dom.readMoreBtn) dom.readMoreBtn.addEventListener('click', openOverlay);
+        if (dom.aboutOverlayClose) dom.aboutOverlayClose.addEventListener('click', closeOverlay);
+        if (dom.aboutOverlay) dom.aboutOverlay.addEventListener('click', e => { if(e.target===dom.aboutOverlay) closeOverlay(); });
+        if (dom.sendFeedbackBtn) dom.sendFeedbackBtn.addEventListener('click', sendFeedback);
+        if (dom.installBtn) dom.installBtn.addEventListener('click', installApp);
+        if (dom.gradCloseBtn) dom.gradCloseBtn.addEventListener('click', () => { if (dom.gradOverlay) dom.gradOverlay.classList.remove('visible'); });
+        if (dom.gradOverlay) dom.gradOverlay.addEventListener('click', e => { if(e.target===dom.gradOverlay && dom.gradOverlay) dom.gradOverlay.classList.remove('visible'); });
+        if (dom.userPill) dom.userPill.addEventListener('click', e => { e.stopPropagation(); toggleUserDropdown(); });
+        document.addEventListener('click', e => { if(!dom.userPill || !dom.userDropdown) return; if(!dom.userPill.contains(e.target) && !dom.userDropdown.contains(e.target)) closeUserDropdown(); });
+        if (dom.userModalCancel) dom.userModalCancel.addEventListener('click', closeUserModal);
+        if (dom.userModalSave) dom.userModalSave.addEventListener('click', saveUserModal);
+        if (dom.userModalBackdrop) dom.userModalBackdrop.addEventListener('click', e => { if(e.target===dom.userModalBackdrop) closeUserModal(); });
+        if (dom.settingsBtn) dom.settingsBtn.addEventListener('click', openSettingsModal);
+        if (dom.settingsModalCancel) dom.settingsModalCancel.addEventListener('click', closeSettingsModal);
+        if (dom.settingsModalSave) dom.settingsModalSave.addEventListener('click', saveSettingsModal);
+        if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.addEventListener('click', e => { if(e.target===dom.settingsModalBackdrop) closeSettingsModal(); });
     }
 
     window.addEventListener('online', () => { fetchAndRenderSchedule(true); });
@@ -1239,3 +1232,4 @@
 </script>
 </body>
 </html>
+```
