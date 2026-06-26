@@ -448,12 +448,10 @@
 </div>
 
 <div class="user-modal-backdrop" id="settingsModalBackdrop">
-    <div class="user-modal"><h3>Schedule Settings</h3>
-        <label for="settingsLang">Language</label>
+    <div class="user-modal"><h3 id="settingsModalTitle">Schedule Settings</h3>
+        <label for="settingsLang" id="settingsLangLabel">Language</label>
         <select id="settingsLang"></select>
-        <label for="settingsProg">Program</label>
-        <select id="settingsProg"><option value="AWB">Aleph with Beth</option><option value="AWA">Alpha with Angela</option></select>
-        <label for="settingsTime">Time per day</label>
+        <label for="settingsTime" id="settingsTimeLabel">Time per day</label>
         <select id="settingsTime"><option value="30">30 min</option><option value="60">60 min</option><option value="90">90 min</option></select>
         <div class="user-modal-actions"><button class="btn-cancel" id="settingsModalCancel">Cancel</button><button class="btn-save" id="settingsModalSave">Save</button></div>
     </div>
@@ -470,14 +468,81 @@
 
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
 
-    const LANGUAGES = [
-        "Afrikaans","Albanian","Amharic","Arabic","Assamese","Bengali","Burmese","Cebuano","Croatian","Dutch",
-        "English","Farsi","Finnish","French","Fulfulde","German","Greek","Gujarati","Hausa","Hebrew","Hindi",
-        "Hmong","Hungarian","Iloko","Indonesian","Kannada","Khmer","Korean","Lao","Malagasy","Malay",
-        "Malayalam","Mandarin","Marathi","Nepali","Odia","Pashto","Polish","Portuguese","Punjabi","Russian",
-        "Serbian","Sindhi","Spanish","Swahili","Swedish","Tagalog","Tamil","Telugu","Thai","Tok Pisin",
-        "Turkish","Vietnamese","Urdu"
-    ];
+    // Native language names (as shown in the original scheduler)
+    const NATIVE_NAMES = {
+        "Afrikaans": "Afrikaans",
+        "Albanian": "Shqip",
+        "Amharic": "አማርኛ",
+        "Arabic": "العربية",
+        "Assamese": "অসমীয়া",
+        "Bengali": "বাংলা",
+        "Burmese": "မြန်မာဘာသာ",
+        "Cebuano": "Cebuano",
+        "Croatian": "Hrvatski",
+        "Dutch": "Nederlands",
+        "English": "English",
+        "Farsi": "فارسی",
+        "Finnish": "Suomi",
+        "French": "Français",
+        "Fulfulde": "Fulfulde",
+        "German": "Deutsch",
+        "Greek": "Ελληνικά",
+        "Gujarati": "ગુજરાતી",
+        "Hausa": "Hausa",
+        "Hebrew": "עברית",
+        "Hindi": "हिन्दी",
+        "Hmong": "Hmoob",
+        "Hungarian": "Magyar",
+        "Iloko": "Iloko",
+        "Indonesian": "Bahasa Indonesia",
+        "Kannada": "ಕನ್ನಡ",
+        "Khmer": "ភាសាខ្មែរ",
+        "Korean": "한국어",
+        "Lao": "ລາວ",
+        "Malagasy": "Malagasy",
+        "Malay": "Bahasa Melayu",
+        "Malayalam": "മലയാളം",
+        "Mandarin": "中文",
+        "Marathi": "मराठी",
+        "Nepali": "नेपाली",
+        "Odia": "ଓଡ଼ିଆ",
+        "Pashto": "پښتو",
+        "Polish": "Polski",
+        "Portuguese": "Português",
+        "Punjabi": "ਪੰਜਾਬੀ",
+        "Russian": "Русский",
+        "Serbian": "Српски",
+        "Sindhi": "سنڌي",
+        "Spanish": "Español",
+        "Swahili": "Kiswahili",
+        "Swedish": "Svenska",
+        "Tagalog": "Tagalog",
+        "Tamil": "தமிழ்",
+        "Telugu": "తెలుగు",
+        "Thai": "ไทย",
+        "Tok Pisin": "Tok Pisin",
+        "Turkish": "Türkçe",
+        "Vietnamese": "Tiếng Việt",
+        "Urdu": "اردو"
+    };
+
+    // Simple localisation for the settings modal (keyed by English name)
+    const SETTINGS_LOCALE = {
+        "English": { title: "Schedule Settings", langLabel: "Language", timeLabel: "Time per day", cancel: "Cancel", save: "Save" },
+        "French": { title: "Paramètres", langLabel: "Langue", timeLabel: "Temps par jour", cancel: "Annuler", save: "Enregistrer" },
+        "Spanish": { title: "Configuración", langLabel: "Idioma", timeLabel: "Tiempo por día", cancel: "Cancelar", save: "Guardar" },
+        "German": { title: "Einstellungen", langLabel: "Sprache", timeLabel: "Zeit pro Tag", cancel: "Abbrechen", save: "Speichern" },
+        "Portuguese": { title: "Configurações", langLabel: "Idioma", timeLabel: "Tempo por dia", cancel: "Cancelar", save: "Salvar" },
+        "Hebrew": { title: "הגדרות", langLabel: "שפה", timeLabel: "זמן ליום", cancel: "ביטול", save: "שמור" },
+        "Arabic": { title: "الإعدادات", langLabel: "اللغة", timeLabel: "الوقت في اليوم", cancel: "إلغاء", save: "حفظ" },
+        "Russian": { title: "Настройки", langLabel: "Язык", timeLabel: "Время в день", cancel: "Отмена", save: "Сохранить" },
+        "Hindi": { title: "सेटिंग्स", langLabel: "भाषा", timeLabel: "प्रतिदिन समय", cancel: "रद्द करें", save: "सहेजें" },
+        "Mandarin": { title: "设置", langLabel: "语言", timeLabel: "每天时间", cancel: "取消", save: "保存" }
+    };
+
+    function getSettingsLocale(lang) {
+        return SETTINGS_LOCALE[lang] || SETTINGS_LOCALE["English"];
+    }
 
     let dom = {};
     function cacheDomReferences() {
@@ -516,10 +581,12 @@
         dom.settingsBtn = document.getElementById('settingsBtn');
         dom.settingsModalBackdrop = document.getElementById('settingsModalBackdrop');
         dom.settingsLang = document.getElementById('settingsLang');
-        dom.settingsProg = document.getElementById('settingsProg');
         dom.settingsTime = document.getElementById('settingsTime');
         dom.settingsModalCancel = document.getElementById('settingsModalCancel');
         dom.settingsModalSave = document.getElementById('settingsModalSave');
+        dom.settingsModalTitle = document.getElementById('settingsModalTitle');
+        dom.settingsLangLabel = document.getElementById('settingsLangLabel');
+        dom.settingsTimeLabel = document.getElementById('settingsTimeLabel');
     }
 
     const USER_LIST_KEY = 'hebrew-user-list';
@@ -680,32 +747,42 @@
     function populateLangDropdown() {
         if (!dom.settingsLang) return;
         dom.settingsLang.innerHTML = '';
-        LANGUAGES.forEach(lang => {
+        Object.keys(NATIVE_NAMES).forEach(eng => {
             const opt = document.createElement('option');
-            opt.value = lang; opt.textContent = lang;
+            opt.value = eng;
+            opt.textContent = NATIVE_NAMES[eng] || eng;
             dom.settingsLang.appendChild(opt);
         });
     }
+
+    function localizeSettingsModal(lang) {
+        const loc = getSettingsLocale(lang);
+        if (dom.settingsModalTitle) dom.settingsModalTitle.textContent = loc.title;
+        if (dom.settingsLangLabel) dom.settingsLangLabel.textContent = loc.langLabel;
+        if (dom.settingsTimeLabel) dom.settingsTimeLabel.textContent = loc.timeLabel;
+        if (dom.settingsModalCancel) dom.settingsModalCancel.textContent = loc.cancel;
+        if (dom.settingsModalSave) dom.settingsModalSave.textContent = loc.save;
+    }
+
     function openSettingsModal() {
         const s = getScheduleSettings();
         if (dom.settingsLang) dom.settingsLang.value = s.lang;
-        if (dom.settingsProg) dom.settingsProg.value = s.prog;
         if (dom.settingsTime) dom.settingsTime.value = s.time;
+        localizeSettingsModal(s.lang);
         if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.classList.add('visible');
     }
     function closeSettingsModal() { if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.classList.remove('visible'); }
     function saveSettingsModal() {
         const settings = {
             lang: dom.settingsLang ? dom.settingsLang.value : 'English',
-            prog: dom.settingsProg ? dom.settingsProg.value : 'AWB',
-            time: dom.settingsTime ? dom.settingsTime.value : '90'
+            time: dom.settingsTime ? dom.settingsTime.value : '60'
         };
         localStorage.setItem('hebrew-schedule-settings', JSON.stringify(settings));
         closeSettingsModal();
         fetchAndRenderSchedule(true);
     }
     function getScheduleSettings() {
-        const def = { lang: 'English', prog: 'AWB', time: '90' };
+        const def = { lang: 'English', time: '60' };
         try {
             const raw = localStorage.getItem('hebrew-schedule-settings');
             return raw ? { ...def, ...JSON.parse(raw) } : def;
@@ -713,7 +790,7 @@
     }
 
     function buildScheduleUrl(settings) {
-        const prog = settings.prog;
+        const prog = 'AWB';   // always Aleph with Beth
         const time = settings.time;
         const lang = encodeURIComponent(settings.lang);
         return `https://leekehlerdesign.ca/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
@@ -742,7 +819,7 @@
             if (resp.ok) return await resp.text();
         } catch(e) { console.warn('Worker fetch failed', e); }
 
-        // 2) Direct (in case CORS ever enabled)
+        // 2) Direct (if CORS ever enabled)
         try {
             const resp = await fetchWithTimeout(directUrl);
             if (resp.ok) return await resp.text();
@@ -829,7 +906,7 @@
             const errHtml = `<div class="error-state">
                 <div class="error-icon">📡</div>
                 <p>Unable to load schedule.</p>
-                <p>Check your connection or <button class="retry-btn" id="retryInlineBtn">Try Again</button></p>
+                <button class="retry-btn" id="retryInlineBtn">Try Again</button>
             </div>`;
             if (dom.mainContent) dom.mainContent.innerHTML = errHtml;
             updateTotalProgress(null, {});
@@ -1216,6 +1293,10 @@
         if (dom.settingsModalCancel) dom.settingsModalCancel.addEventListener('click', closeSettingsModal);
         if (dom.settingsModalSave) dom.settingsModalSave.addEventListener('click', saveSettingsModal);
         if (dom.settingsModalBackdrop) dom.settingsModalBackdrop.addEventListener('click', e => { if(e.target===dom.settingsModalBackdrop) closeSettingsModal(); });
+        // Update localization when language dropdown changes inside the modal
+        if (dom.settingsLang) dom.settingsLang.addEventListener('change', function() {
+            localizeSettingsModal(this.value);
+        });
     }
 
     window.addEventListener('online', () => { fetchAndRenderSchedule(true); });
