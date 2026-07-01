@@ -7,7 +7,7 @@
     <meta name="description" content="Offline-first tracker for the Aleph with Beth schedule">
     <title>Aleph with Beth</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23262b80' width='100' height='100' rx='20'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50' font-family='serif'>א</text></svg>" type="image/svg+xml">
+    <link rel="icon" href="./icons/icon-64.png" type="image/png">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <style>
         :root {
@@ -296,13 +296,6 @@
         .footer-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 16px; }
         .footer-divider-line { flex: 1; height: 1px; background: var(--divider); }
         .footer-divider-ornament { color: var(--text-muted); font-size: 1rem; }
-        .footer-church { font-size: 0.72rem; margin-bottom: 2px; }
-        .footer-church a { color: var(--accent); text-decoration: underline; }
-        .app-footer a { color: var(--link-color); text-decoration: underline; }
-        .footer-soli { font-size: 0.72rem; font-weight: 500; margin-top: 6px; color: var(--text-secondary); }
-        .footer-read-more { margin-top: 12px; background: none; border: 1px solid var(--card-border); padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 0.7rem; color: var(--accent); transition: all var(--transition-fast); display: inline-flex; align-items: center; gap: 6px; }
-        .footer-read-more:hover { background: var(--accent-light); color: var(--accent-dark); }
-        .footer-read-more svg { width: 14px; height: 14px; }
 
         .overlay-backdrop { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; padding: 20px; }
         .overlay-backdrop.visible { display: flex; }
@@ -310,14 +303,12 @@
         .overlay-close-btn { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); padding: 4px 8px; border-radius: 4px; }
         .overlay-close-btn:hover { background: var(--accent-light); }
         .overlay-panel h2 { font-size: 1.3rem; margin-bottom: 6px; }
-        .overlay-version { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; }
         .overlay-panel h3 { font-size: 0.9rem; margin-top: 16px; margin-bottom: 6px; color: var(--text-secondary); }
         .overlay-panel p { font-size: 0.85rem; line-height: 1.5; margin-bottom: 8px; }
         .overlay-panel a { color: var(--accent); text-decoration: underline; }
         .overlay-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; }
         .overlay-divider-line { flex: 1; height: 1px; background: var(--divider); }
         .overlay-divider-dot { width: 6px; height: 6px; background: var(--divider); border-radius: 50%; }
-        .overlay-soli { text-align: center; font-size: 0.82rem; font-weight: 500; margin-top: 8px; color: var(--text-secondary); }
         .overlay-panel input[type="text"], .overlay-panel input[type="email"], .overlay-panel textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text-primary); font-family: var(--font-sans); font-size: 0.85rem; margin-bottom: 10px; }
         .overlay-panel input:focus, .overlay-panel textarea:focus { outline: none; border-color: var(--accent); }
         .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-weight: 600; cursor: pointer; transition: background var(--transition-fast); display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
@@ -334,13 +325,8 @@
 
         .settings-modal select { width: 100%; padding: 8px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); margin-bottom: 12px; font-family: var(--font-sans); font-size: 0.9rem; background: var(--bg); }
 
-        .help-step { margin-bottom: 12px; }
-        .help-step strong { display: block; font-size: 0.85rem; color: var(--accent); margin-bottom: 2px; }
-        .help-step span { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
-
         @media (max-width:480px) {
             .app-container { padding: 10px 10px 32px; }
-            .app-title { font-size: 1.5rem; }
             .week-header { padding: 12px 14px; }
             .week-body-content { padding: 0 14px 12px; }
             .day-header { padding: 8px 10px; }
@@ -398,10 +384,6 @@
             </button>
         </div>
         <div class="footer-divider"><div class="footer-divider-line"></div><span class="footer-divider-ornament">✦</span><div class="footer-divider-line"></div></div>
-        <p class="footer-church" id="footerCourtesy">Courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a></p>
-        <p style="margin-top:2px;" id="footerBuiltBy">Built by <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a></p>
-        <p style="font-size:0.6rem;color:var(--text-faint);margin-top:6px;letter-spacing:0.03em;">v<span id="footerVersion">1.0</span></p>
-        <p class="footer-soli">Soli Deo Gloria</p>
         <button class="footer-read-more" id="readMoreBtn" aria-label="About & Contact">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="6" x2="12.01" y2="6"/><line x1="12" y1="9" x2="12" y2="13"/></svg> <span id="aboutLabel">About &amp; Contact</span>
         </button>
@@ -433,7 +415,6 @@
         <h3 id="aboutCreditsTitle">Credits</h3>
         <p id="aboutCreditsText">Curriculum courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (public domain). Built with love by <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>, a member of <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a>.</p>
         <p style="text-align:center;font-size:0.82rem;color:var(--text-faint);" id="aboutGlory">For the glory of God alone.</p>
-        <p class="overlay-soli">Soli Deo Gloria</p>
         <div class="overlay-divider" style="margin-top:18px;"><div class="overlay-divider-line"></div><span style="font-size:0.7rem;color:var(--text-faint);white-space:nowrap;" id="feedbackHeader">💬 Send a Message</span><div class="overlay-divider-line"></div></div>
         <p style="font-size:0.75rem;color:var(--text-faint);text-align:center;margin-bottom:8px;" id="feedbackSubtitle">Report a bug, suggest a feature, or just say hi.</p>
         <input type="text" id="feedbackName" placeholder="Your name" maxlength="100" required>
@@ -468,6 +449,7 @@
     };
 
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
+    const LOCALIZATION_URL = 'https://leekehlerdesign.ca/LearningSchedule/js/localization.js';
 
     const NATIVE_NAMES = {
         "Afrikaans": "Afrikaans","Albanian": "Shqip","Amharic": "አማርኛ","Arabic": "العربية","Assamese": "অসমীয়া",
@@ -485,8 +467,6 @@
 
     const UI_LOCALE = {
         English: {
-            title: "Aleph with Beth",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
             loading: "Loading your learning schedule…",
             export: "Export",
             import: "Import",
@@ -519,8 +499,6 @@
             noData: "No schedule data found.",
             errorLoad: "Unable to load schedule.",
             errorCheckConnection: "Check your connection and try again.",
-            footerCourtesy: 'Courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: 'Built by <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>',
             userDropdownEdit: "Edit name",
             userDropdownAdd: "Add user",
             userDropdownRemove: "Remove user",
@@ -538,8 +516,6 @@
             ]
         },
         Arabic: {
-            title: "ألف مع بيث",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">ألف مع بيث</a>',
             loading: "جارٍ تحميل جدول الدراسة…",
             export: "تصدير",
             import: "استيراد",
@@ -572,8 +548,6 @@
             noData: "لم يتم العثور على جدول.",
             errorLoad: "تعذّر تحميل الجدول.",
             errorCheckConnection: "تحقق من اتصالك وحاول مرة أخرى.",
-            footerCourtesy: 'بإذن من <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: 'بُني بواسطة <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>',
             userDropdownEdit: "تعديل الاسم",
             userDropdownAdd: "إضافة مستخدم",
             userDropdownRemove: "إزالة المستخدم",
@@ -591,8 +565,6 @@
             ]
         },
         Mandarin: {
-            title: "与Beth的Aleph",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">与Beth的Aleph</a>',
             loading: "正在加载学习计划…",
             export: "导出",
             import: "导入",
@@ -625,8 +597,6 @@
             noData: "未找到课程数据。",
             errorLoad: "无法加载课程。",
             errorCheckConnection: "请检查您的连接并重试。",
-            footerCourtesy: '感谢 <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: '由 <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a> 构建',
             userDropdownEdit: "编辑名称",
             userDropdownAdd: "添加用户",
             userDropdownRemove: "删除用户",
@@ -644,8 +614,6 @@
             ]
         },
         French: {
-            title: "Aleph avec Beth",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph avec Beth</a>',
             loading: "Chargement de votre programme d'apprentissage…",
             export: "Exporter",
             import: "Importer",
@@ -678,8 +646,6 @@
             noData: "Aucune donnée de programme trouvée.",
             errorLoad: "Impossible de charger le programme.",
             errorCheckConnection: "Vérifiez votre connexion et réessayez.",
-            footerCourtesy: 'Avec l\'aimable autorisation de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: 'Construit par <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>',
             userDropdownEdit: "Modifier le nom",
             userDropdownAdd: "Ajouter un utilisateur",
             userDropdownRemove: "Supprimer l'utilisateur",
@@ -697,8 +663,6 @@
             ]
         },
         Russian: {
-            title: "Алеф с Бет",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Алеф с Бет</a>',
             loading: "Загрузка учебного расписания…",
             export: "Экспорт",
             import: "Импорт",
@@ -731,8 +695,6 @@
             noData: "Данные расписания не найдены.",
             errorLoad: "Не удалось загрузить расписание.",
             errorCheckConnection: "Проверьте подключение и попробуйте снова.",
-            footerCourtesy: 'Предоставлено <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: 'Создано <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>',
             userDropdownEdit: "Изменить имя",
             userDropdownAdd: "Добавить пользователя",
             userDropdownRemove: "Удалить пользователя",
@@ -750,8 +712,6 @@
             ]
         },
         Spanish: {
-            title: "Aleph con Beth",
-            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph con Beth</a>',
             loading: "Cargando tu plan de estudios…",
             export: "Exportar",
             import: "Importar",
@@ -784,8 +744,6 @@
             noData: "No se encontraron datos del plan.",
             errorLoad: "No se pudo cargar el plan.",
             errorCheckConnection: "Verifica tu conexión e inténtalo de nuevo.",
-            footerCourtesy: 'Cortesía de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
-            footerBuiltBy: 'Construido por <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>',
             userDropdownEdit: "Editar nombre",
             userDropdownAdd: "Agregar usuario",
             userDropdownRemove: "Eliminar usuario",
@@ -804,19 +762,48 @@
         }
     };
 
+    let localizationCache = null;
+    async function fetchLocalization() {
+        if (localizationCache) return localizationCache;
+        try {
+            const resp = await fetch(LOCALIZATION_URL);
+            if (!resp.ok) throw new Error('Failed to fetch localization');
+            const text = await resp.text();
+            // Extract the localization object using eval (safe because it's their own script)
+            const match = text.match(/var localization = ({[\s\S]*?});/);
+            if (match) {
+                localizationCache = eval('(' + match[1] + ')');
+                return localizationCache;
+            }
+        } catch(e) {
+            console.warn('Could not fetch localization, falling back to English.');
+        }
+        return null;
+    }
+
+    function getProgramName(lang) {
+        if (localizationCache && localizationCache[lang] && localizationCache[lang].Aleph) {
+            return localizationCache[lang].Aleph;
+        }
+        // Fallback to English if not available
+        if (localizationCache && localizationCache['English'] && localizationCache['English'].Aleph) {
+            return localizationCache['English'].Aleph;
+        }
+        return 'Aleph with Beth';
+    }
+
     function getUILocale(lang) {
         return UI_LOCALE[lang] || UI_LOCALE["English"];
     }
 
     function applyLocale(lang) {
         const loc = getUILocale(lang);
-        if (dom.attributionText) dom.attributionText.innerHTML = loc.attribution;
+        const programName = getProgramName(lang);
+        if (dom.attributionText) dom.attributionText.innerHTML = `<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">${escapeHtml(programName)}</a>`;
         if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
         if (dom.exportLabel) dom.exportLabel.textContent = loc.export;
         if (dom.importLabel) dom.importLabel.textContent = loc.import;
         if (dom.aboutLabel) dom.aboutLabel.textContent = loc.aboutLabel;
-        if (dom.footerCourtesy) dom.footerCourtesy.innerHTML = loc.footerCourtesy;
-        if (dom.footerBuiltBy) dom.footerBuiltBy.innerHTML = loc.footerBuiltBy;
         if (dom.aboutOverlayTitle) dom.aboutOverlayTitle.textContent = loc.aboutTitle;
         if (dom.overlayType) dom.overlayType.textContent = loc.aboutType;
         if (dom.aboutDesc) dom.aboutDesc.innerHTML = loc.aboutDesc;
@@ -854,8 +841,6 @@
         dom.exportBtn = document.getElementById('exportBtn');
         dom.importBtn = document.getElementById('importBtn');
         dom.importFileInput = document.getElementById('importFileInput');
-        dom.footerVersion = document.getElementById('footerVersion');
-        dom.overlayVersionNumber = document.getElementById('overlayVersionNumber');
         dom.aboutOverlay = document.getElementById('aboutOverlay');
         dom.readMoreBtn = document.getElementById('readMoreBtn');
         dom.aboutOverlayClose = document.getElementById('aboutOverlayClose');
@@ -897,8 +882,6 @@
         dom.feedbackSubtitle = document.getElementById('feedbackSubtitle');
         dom.sendLabel = document.getElementById('sendLabel');
         dom.feedbackNote = document.getElementById('feedbackNote');
-        dom.footerCourtesy = document.getElementById('footerCourtesy');
-        dom.footerBuiltBy = document.getElementById('footerBuiltBy');
         dom.helpBtn = document.getElementById('helpBtn');
         dom.helpOverlay = document.getElementById('helpOverlay');
         dom.helpOverlayClose = document.getElementById('helpOverlayClose');
@@ -941,13 +924,7 @@
             const raw = localStorage.getItem(key);
             if (!raw) return {};
             const data = JSON.parse(raw);
-            const m = {};
-            for (const [id, val] of Object.entries(data)) {
-                if (typeof val === 'boolean') m[id] = { checked: val, values: [] };
-                else if (val && typeof val.checked === 'boolean') m[id] = { checked: val.checked, values: Array.isArray(val.values) ? val.values : [] };
-                else m[id] = { checked: false, values: [] };
-            }
-            return m;
+            return data; // keys are stable IDs
         } catch(e) { return {}; }
     }
 
@@ -1166,6 +1143,19 @@
         throw new Error('Could not load schedule.');
     }
 
+    function generateStableTaskId(weekTitle, dayTitle, taskText, links, taskType, index) {
+        // Use video URL if present, else lesson number + type + index
+        if (links && links.length > 0) {
+            const videoUrl = links[0].url;
+            const match = videoUrl.match(/watch\?v=([a-zA-Z0-9_-]+)/);
+            if (match) return 'vid-' + match[1];
+        }
+        // Fallback: week+day+type+index
+        const weekNum = weekTitle.replace(/\D/g, '');
+        const dayNum = dayTitle.replace(/\D/g, '');
+        return `task-${weekNum}-${dayNum}-${taskType || 'generic'}-${index}`;
+    }
+
     function parseScheduleHTML(html) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
@@ -1199,7 +1189,9 @@
                     const links = [];
                     sibling.querySelectorAll('a').forEach(a => links.push({ text: a.textContent, url: a.href }));
                     const isQuiz = /quiz/i.test(text);
-                    const taskId = generateTaskId(currentWeek.title, currentDay.title, text, currentDay.tasks.length);
+                    const taskType = [...sibling.classList].find(c => c !== 'link') || '';
+                    const index = currentDay.tasks.length;
+                    const taskId = generateStableTaskId(currentWeek.title, currentDay.title, text, links, taskType, index);
                     currentDay.tasks.push({
                         id: taskId,
                         rawText: text,
@@ -1260,12 +1252,6 @@
         }
     }
 
-    function generateTaskId(weekTitle, dayTitle, taskText, index = 0) {
-        const composite = `${weekTitle}::${dayTitle}::${index}::${taskText.trim()}`;
-        let hash = 0;
-        for (let i = 0; i < composite.length; i++) { const char = composite.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash |= 0; }
-        return 'task-' + Math.abs(hash).toString(36);
-    }
     function convertMarkdownLinksToHtml(text) {
         return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     }
@@ -1328,7 +1314,7 @@
     function buildFallbackMap(weeksData) {
         const map = {};
         weeksData.forEach(week => week.days.forEach(day => day.tasks.forEach(task => {
-            map[`${week.title}||${day.title}||${task.rawText.substring(0,100)}`] = task.id;
+            map[task.id] = task.id; // self-map for import/export
         })));
         window._fallbackMap = map;
     }
@@ -1470,12 +1456,9 @@
 
     function exportProgress() {
         const states = loadTaskStates();
-        const fallbackMap = window._fallbackMap || {};
         const exportData = { version: 1, user: currentUser, tasks: {} };
         for (const [taskId, state] of Object.entries(states)) {
-            let fallbackKey = '';
-            for (const [key, id] of Object.entries(fallbackMap)) { if (id === taskId) { fallbackKey = key; break; } }
-            exportData.tasks[taskId] = { checked: state.checked, values: state.values || [], fallbackKey };
+            exportData.tasks[taskId] = { checked: state.checked, values: state.values || [] };
         }
         const dateStr = new Date().toISOString().slice(0,10);
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -1488,11 +1471,12 @@
                 const data = JSON.parse(e.target.result);
                 if (!data.tasks) throw new Error('Invalid');
                 const states = loadTaskStates();
-                const fallbackMap = window._fallbackMap || {};
                 for (const [oldId, taskState] of Object.entries(data.tasks)) {
-                    let targetId = oldId;
-                    if (!(targetId in states) && taskState.fallbackKey && fallbackMap[taskState.fallbackKey]) targetId = fallbackMap[taskState.fallbackKey];
-                    if (targetId) states[targetId] = { checked: taskState.checked, values: taskState.values || [] };
+                    if (taskState.checked !== undefined) {
+                        if (!states[oldId]) states[oldId] = { checked: false, values: [] };
+                        states[oldId].checked = taskState.checked;
+                        if (taskState.values) states[oldId].values = taskState.values;
+                    }
                 }
                 saveTaskStates(states);
                 refreshUIInPlace(states);
@@ -1500,17 +1484,6 @@
             } catch(err) { alert('Failed to import.'); }
         };
         reader.readAsText(file);
-    }
-
-    async function fetchVersion() {
-        try {
-            const resp = await fetch('./version.txt', { headers: { 'Cache-Control': 'no-cache' } });
-            if (resp.ok) {
-                const v = (await resp.text()).trim();
-                if (v) { if (dom.footerVersion) dom.footerVersion.textContent = v; if (dom.overlayVersionNumber) dom.overlayVersionNumber.textContent = v; return v; }
-            }
-        } catch(e) {}
-        return null;
     }
 
     function openOverlay(overlay) { if (overlay) { overlay.classList.add('visible'); overlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
@@ -1522,10 +1495,9 @@
         if (dom.helpContent) {
             dom.helpContent.innerHTML = '';
             loc.helpInstructions.forEach(step => {
-                const div = document.createElement('div');
-                div.className = 'help-step';
-                div.innerHTML = `<strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.desc)}</span>`;
-                dom.helpContent.appendChild(div);
+                const p = document.createElement('p');
+                p.innerHTML = `<strong>${escapeHtml(step.label)}:</strong> ${escapeHtml(step.desc)}`;
+                dom.helpContent.appendChild(p);
             });
         }
         openOverlay(dom.helpOverlay);
@@ -1574,7 +1546,7 @@
     async function initApp() {
         cacheDomReferences();
         checkInstalled();
-        fetchVersion();
+        await fetchLocalization(); // load program names before rendering
         migrateOldDataIfNeeded();
         currentUser = getCurrentUser();
         updateUserPill();
