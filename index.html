@@ -60,10 +60,10 @@
             text-align: center;
             border-bottom: 1px solid var(--divider);
         }
-        .header-icon {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 56px; height: 56px; background: var(--accent); color: #fff;
-            border-radius: 12px; font-size: 2rem; font-weight: 500;
+        .header-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
             margin-bottom: 8px;
         }
         .app-title {
@@ -101,11 +101,24 @@
             justify-content: space-between;
             margin-bottom: 4px;
         }
-        .progress-info {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            letter-spacing: 0.01em;
+        .help-btn {
+            background: none;
+            border: 1px solid var(--card-border);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+        }
+        .help-btn:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
         }
 
         .user-pill {
@@ -339,7 +352,7 @@
 <body>
 <div class="app-container" id="appContainer">
     <header class="app-header" id="appHeader">
-        <div class="header-icon">א</div>
+        <img src="logo.webp" alt="Logo" class="header-logo">
         <h1 class="app-title" id="appTitle">Learn Biblical Hebrew</h1>
         <p class="attribution" id="attributionText">
             Courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>
@@ -347,7 +360,7 @@
         <div class="total-progress-section" id="totalProgressSection">
             <div class="progress-bar-outer"><div class="progress-bar-inner" id="totalProgressBar" style="width:0%;"></div></div>
             <div class="progress-info-row">
-                <div class="progress-info" id="progressInfo">0 Days Completed</div>
+                <button class="help-btn" id="helpBtn" title="Help">?</button>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <button class="settings-btn" id="settingsBtn" title="Schedule settings">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -391,6 +404,16 @@
     </button>
 </div>
 
+<!-- Help overlay -->
+<div class="overlay-backdrop" id="helpOverlay" aria-hidden="true">
+    <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="helpOverlayTitle">
+        <button class="overlay-close-btn" id="helpOverlayClose" aria-label="Close">✕</button>
+        <h2 id="helpOverlayTitle">Help</h2>
+        <div id="helpContent"></div>
+    </div>
+</div>
+
+<!-- About overlay -->
 <div class="overlay-backdrop" id="aboutOverlay" aria-hidden="true">
     <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="aboutOverlayTitle">
         <button class="overlay-close-btn" id="aboutOverlayClose" aria-label="Close">✕</button>
@@ -495,6 +518,15 @@
             userDropdownAdd: "Add user",
             userDropdownRemove: "Remove user",
             userRemoveConfirm: 'Remove user "{0}"?',
+            helpTitle: "Help",
+            helpInstructions: `View your schedule – Tap a week (e.g., “Week 1”) to expand it, then tap a day to see its tasks.
+Check off a task – Tap the checkbox. The task fades and the progress ring fills up.
+Enter a quiz score – Tap the blank (e.g., “I got _____%”) and type your score.
+Switch profiles – Tap the user pill (👤) at the top, then choose a name. You can also add or edit users from there.
+Change language/time – Tap the gear (⚙) next to the user pill, pick your options, and tap Save.
+Backup your progress – Scroll to the bottom and tap Export to save a file. Tap Import to restore it later.
+Install on Android – A small install button (↓) will appear at the bottom right corner of the screen. Tap it to add the app to your home screen.
+The app works offline after the first visit. No sign‑up needed.`
         },
         Arabic: {
             title: "تعلّم العبرية الكتابية",
@@ -538,6 +570,15 @@
             userDropdownAdd: "إضافة مستخدم",
             userDropdownRemove: "إزالة المستخدم",
             userRemoveConfirm: 'إزالة المستخدم "{0}"؟',
+            helpTitle: "مساعدة",
+            helpInstructions: `اعرض جدولك – اضغط على أسبوع (مثل "الأسبوع 1") لتوسيعه، ثم اضغط على يوم لرؤية مهامه.
+حدد مهمة – اضغط على مربع الاختيار. ستتضاءل المهمة وتمتلئ حلقة التقدم.
+أدخل درجة الاختبار – اضغط على الفراغ (مثل "حصلت على _____%") واكتب درجتك.
+بدّل المستخدمين – اضغط على زر المستخدم (👤) في الأعلى، ثم اختر اسمًا. يمكنك أيضًا إضافة مستخدمين أو تعديلهم من هناك.
+غيّر اللغة/الوقت – اضغط على الترس (⚙) بجانب زر المستخدم، اختر خياراتك، ثم اضغط حفظ.
+انسخ تقدمك احتياطيًا – مرر إلى الأسفل واضغط تصدير لحفظ ملف. اضغط استيراد لاستعادته لاحقًا.
+التثبيت على أندرويد – سيظهر زر تثبيت صغير (↓) في الركن الأيمن السفلي من الشاشة. اضغط عليه لإضافة التطبيق إلى شاشتك الرئيسية.
+يعمل التطبيق دون اتصال بعد الزيارة الأولى. لا حاجة للتسجيل.`
         },
         Mandarin: {
             title: "学习圣经希伯来语",
@@ -581,6 +622,15 @@
             userDropdownAdd: "添加用户",
             userDropdownRemove: "删除用户",
             userRemoveConfirm: '删除用户 "{0}"？',
+            helpTitle: "帮助",
+            helpInstructions: `查看您的日程 – 点击一周（例如“第一周”）展开，然后点击一天查看其任务。
+勾选任务 – 点击复选框。任务会淡出，进度环会填满。
+输入测验成绩 – 点击空白处（例如“我得了 _____%”）并输入您的分数。
+切换用户 – 点击顶部的用户按钮 (👤)，然后选择一个名字。您也可以在那里添加或编辑用户。
+更改语言/时间 – 点击用户按钮旁边的齿轮 (⚙)，选择您的选项，然后点击保存。
+备份您的进度 – 滚动到底部并点击导出以保存文件。点击导入以恢复。
+在安卓上安装 – 屏幕右下角会出现一个小的安装按钮 (↓)。点击它将应用添加到您的主屏幕。
+首次访问后，应用可离线使用。无需注册。`
         },
         French: {
             title: "Apprendre l'hébreu biblique",
@@ -624,6 +674,15 @@
             userDropdownAdd: "Ajouter un utilisateur",
             userDropdownRemove: "Supprimer l'utilisateur",
             userRemoveConfirm: 'Supprimer l\'utilisateur "{0}" ?',
+            helpTitle: "Aide",
+            helpInstructions: `Voir votre programme – Appuyez sur une semaine (ex. « Semaine 1 ») pour la développer, puis appuyez sur un jour pour voir ses tâches.
+Cocher une tâche – Appuyez sur la case à cocher. La tâche s'estompe et l'anneau de progression se remplit.
+Entrer un score de quiz – Appuyez sur le blanc (ex. « J'ai obtenu _____% ») et tapez votre score.
+Changer de profil – Appuyez sur la pastille utilisateur (👤) en haut, puis choisissez un nom. Vous pouvez également ajouter ou modifier des utilisateurs à partir de là.
+Changer la langue/le temps – Appuyez sur l'engrenage (⚙) à côté de la pastille utilisateur, choisissez vos options, puis appuyez sur Enregistrer.
+Sauvegarder votre progression – Faites défiler vers le bas et appuyez sur Exporter pour enregistrer un fichier. Appuyez sur Importer pour le restaurer plus tard.
+Installer sur Android – Un petit bouton d'installation (↓) apparaîtra dans le coin inférieur droit de l'écran. Appuyez dessus pour ajouter l'application à votre écran d'accueil.
+L'application fonctionne hors ligne après la première visite. Aucune inscription nécessaire.`
         },
         Russian: {
             title: "Изучение библейского иврита",
@@ -667,6 +726,15 @@
             userDropdownAdd: "Добавить пользователя",
             userDropdownRemove: "Удалить пользователя",
             userRemoveConfirm: 'Удалить пользователя "{0}"?',
+            helpTitle: "Помощь",
+            helpInstructions: `Просмотр расписания – Нажмите на неделю (например, «Неделя 1»), чтобы развернуть её, затем нажмите на день, чтобы увидеть задания.
+Отметка задания – Нажмите на флажок. Задание потускнеет, а кольцо прогресса заполнится.
+Ввод результата теста – Нажмите на пропуск (например, «Я набрал _____%») и введите свой результат.
+Смена пользователя – Нажмите на значок пользователя (👤) вверху, затем выберите имя. Там же можно добавить или изменить пользователей.
+Изменение языка/времени – Нажмите на шестерёнку (⚙) рядом со значком пользователя, выберите параметры и нажмите «Сохранить».
+Резервное копирование прогресса – Прокрутите вниз и нажмите «Экспорт», чтобы сохранить файл. Нажмите «Импорт», чтобы восстановить его позже.
+Установка на Android – В правом нижнем углу экрана появится маленькая кнопка установки (↓). Нажмите её, чтобы добавить приложение на главный экран.
+Приложение работает офлайн после первого посещения. Регистрация не требуется.`
         },
         Spanish: {
             title: "Aprender hebreo bíblico",
@@ -710,6 +778,15 @@
             userDropdownAdd: "Agregar usuario",
             userDropdownRemove: "Eliminar usuario",
             userRemoveConfirm: '¿Eliminar usuario "{0}"?',
+            helpTitle: "Ayuda",
+            helpInstructions: `Ver tu plan – Toca una semana (ej. “Semana 1”) para expandirla, luego toca un día para ver sus tareas.
+Marcar una tarea – Toca la casilla de verificación. La tarea se atenúa y el anillo de progreso se llena.
+Ingresar una puntuación de prueba – Toca el espacio en blanco (ej. “Obtuve _____%”) y escribe tu puntuación.
+Cambiar de perfil – Toca la pastilla de usuario (👤) en la parte superior, luego elige un nombre. También puedes agregar o editar usuarios desde allí.
+Cambiar idioma/tiempo – Toca el engranaje (⚙) junto a la pastilla de usuario, elige tus opciones y toca Guardar.
+Respaldar tu progreso – Desplázate hasta abajo y toca Exportar para guardar un archivo. Toca Importar para restaurarlo más tarde.
+Instalar en Android – Aparecerá un pequeño botón de instalación (↓) en la esquina inferior derecha de la pantalla. Tócalo para agregar la aplicación a tu pantalla de inicio.
+La aplicación funciona sin conexión después de la primera visita. No es necesario registrarse.`
         }
     };
 
@@ -721,10 +798,9 @@
         const loc = getUILocale(lang);
         if (dom.appTitle) dom.appTitle.textContent = loc.title;
         if (dom.attributionText) dom.attributionText.innerHTML = loc.attribution;
-        if (dom.progressInfo) {
-            const completed = (dom.progressInfo.getAttribute('data-completed') || 0);
-            dom.progressInfo.textContent = loc.daysCompleted.replace('{0}', completed);
-        }
+        // Help overlay title
+        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
+        // Help content will be updated when help is opened
         if (dom.exportLabel) dom.exportLabel.textContent = loc.export;
         if (dom.importLabel) dom.importLabel.textContent = loc.import;
         if (dom.aboutLabel) dom.aboutLabel.textContent = loc.aboutLabel;
@@ -763,7 +839,6 @@
         dom.mainContent = document.getElementById('mainContent');
         dom.loadingState = document.getElementById('loadingState');
         dom.totalProgressBar = document.getElementById('totalProgressBar');
-        dom.progressInfo = document.getElementById('progressInfo');
         dom.totalProgressSection = document.getElementById('totalProgressSection');
         dom.exportBtn = document.getElementById('exportBtn');
         dom.importBtn = document.getElementById('importBtn');
@@ -814,6 +889,11 @@
         dom.feedbackNote = document.getElementById('feedbackNote');
         dom.footerCourtesy = document.getElementById('footerCourtesy');
         dom.footerBuiltBy = document.getElementById('footerBuiltBy');
+        dom.helpBtn = document.getElementById('helpBtn');
+        dom.helpOverlay = document.getElementById('helpOverlay');
+        dom.helpOverlayClose = document.getElementById('helpOverlayClose');
+        dom.helpOverlayTitle = document.getElementById('helpOverlayTitle');
+        dom.helpContent = document.getElementById('helpContent');
     }
 
     const USER_LIST_KEY = 'hebrew-user-list';
@@ -1036,7 +1116,7 @@
         return `https://leekehlerdesign.ca/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
     }
 
-    async function fetchWithTimeout(url, timeoutMs = 12000) {
+    async function fetchWithTimeout(url, timeoutMs = 20000) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
         try {
@@ -1049,17 +1129,30 @@
         }
     }
 
+    let activeFetchController = null;
     async function fetchWithFallback(settings) {
         const directUrl = buildScheduleUrl(settings);
+        // Cancel any pending fetch
+        if (activeFetchController) {
+            activeFetchController.abort();
+        }
+        activeFetchController = new AbortController();
+        const signal = activeFetchController.signal;
+
         try {
+            // Try direct first (if CORS header present or extension active)
+            try {
+                const resp = await fetchWithTimeout(directUrl, 20000, signal);
+                if (resp.ok) return await resp.text();
+            } catch(e) { /* ignore */ }
+            // Fallback to Worker
             const proxyUrl = CORS_WORKER + encodeURIComponent(directUrl);
-            const resp = await fetchWithTimeout(proxyUrl);
+            const resp = await fetchWithTimeout(proxyUrl, 20000, signal);
             if (resp.ok) return await resp.text();
-        } catch(e) { console.warn('Worker fetch failed', e); }
-        try {
-            const resp = await fetchWithTimeout(directUrl);
-            if (resp.ok) return await resp.text();
-        } catch(e) { console.warn('Direct fetch failed', e); }
+        } catch(e) {
+            if (e.name === 'AbortError') throw new Error('Request cancelled');
+            throw e;
+        }
         throw new Error('Could not load schedule.');
     }
 
@@ -1069,7 +1162,6 @@
         const weeks = [];
         let currentWeek = null, currentDay = null;
 
-        // These class names are summary lines, not tasks – skip them entirely
         const SUMMARY_CLASSES = new Set(['more','longest','shortest','average','total_days','total_time','total_time_value']);
 
         const weekElements = doc.querySelectorAll('h2.week');
@@ -1086,7 +1178,6 @@
                     currentDay = { id: currentWeek.id+'-day-'+dayNum, title: dayTitle, dayNumber: dayNum, tasks: [] };
                     currentWeek.days.push(currentDay);
                 } else if (currentDay && sibling.tagName === 'P') {
-                    // Skip summary lines
                     const hasSummaryClass = [...sibling.classList].some(c => SUMMARY_CLASSES.has(c));
                     if (hasSummaryClass) {
                         sibling = sibling.nextElementSibling;
@@ -1108,7 +1199,6 @@
                         links,
                         isQuiz,
                         blankCount: 0,
-                        // no taskType needed
                     });
                 }
                 sibling = sibling.nextElementSibling;
@@ -1284,7 +1374,6 @@
         html += '<div class="task-badges">';
         if (task.duration) html += '<span class="task-duration-badge">⏱ '+escapeHtml(task.duration)+'</span>';
         if (task.isQuiz) html += '<span class="task-quiz-badge">📝 Quiz</span>';
-        // No more task-type-badge
         task.links.forEach(link => { html += '<a href="'+escapeHtml(link.url)+'" target="_blank" rel="noopener" class="task-link-badge">🔗 '+escapeHtml(link.text)+'</a>'; });
         html += '</div></div></div>';
         return html;
@@ -1346,12 +1435,7 @@
         const completedDays = weeksData ? getCompletedDays(weeksData, savedStates) : 0;
         const barPercent = currentTotalDays > 0 ? Math.min(100, (completedDays / currentTotalDays) * 100) : 0;
         if (dom.totalProgressBar) dom.totalProgressBar.style.width = barPercent + '%';
-        const lang = getScheduleSettings().lang;
-        const loc = getUILocale(lang);
-        if (dom.progressInfo) {
-            dom.progressInfo.textContent = loc.daysCompleted.replace('{0}', completedDays);
-            dom.progressInfo.setAttribute('data-completed', completedDays);
-        }
+        // No more days completed text
     }
 
     function refreshAllProgress(states) {
@@ -1420,8 +1504,16 @@
         return null;
     }
 
-    function openOverlay() { if (dom.aboutOverlay) { dom.aboutOverlay.classList.add('visible'); dom.aboutOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
-    function closeOverlay() { if (dom.aboutOverlay) { dom.aboutOverlay.classList.remove('visible'); dom.aboutOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
+    function openOverlay(overlay) { if (overlay) { overlay.classList.add('visible'); overlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
+    function closeOverlay(overlay) { if (overlay) { overlay.classList.remove('visible'); overlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
+
+    function openHelpOverlay() {
+        const loc = getUILocale(getScheduleSettings().lang);
+        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
+        if (dom.helpContent) dom.helpContent.innerText = loc.helpInstructions;
+        openOverlay(dom.helpOverlay);
+    }
+
     async function sendFeedback() {
         const name = dom.feedbackName ? dom.feedbackName.value.trim() : '';
         const email = dom.feedbackEmail ? dom.feedbackEmail.value.trim() : '';
@@ -1481,9 +1573,9 @@
         if (dom.exportBtn) dom.exportBtn.addEventListener('click', exportProgress);
         if (dom.importBtn) dom.importBtn.addEventListener('click', () => { if (dom.importFileInput) dom.importFileInput.click(); });
         if (dom.importFileInput) dom.importFileInput.addEventListener('change', e => { if(e.target.files.length>0) { importProgress(e.target.files[0]); e.target.value=''; } });
-        if (dom.readMoreBtn) dom.readMoreBtn.addEventListener('click', openOverlay);
-        if (dom.aboutOverlayClose) dom.aboutOverlayClose.addEventListener('click', closeOverlay);
-        if (dom.aboutOverlay) dom.aboutOverlay.addEventListener('click', e => { if(e.target===dom.aboutOverlay) closeOverlay(); });
+        if (dom.readMoreBtn) dom.readMoreBtn.addEventListener('click', () => openOverlay(dom.aboutOverlay));
+        if (dom.aboutOverlayClose) dom.aboutOverlayClose.addEventListener('click', () => closeOverlay(dom.aboutOverlay));
+        if (dom.aboutOverlay) dom.aboutOverlay.addEventListener('click', e => { if(e.target===dom.aboutOverlay) closeOverlay(dom.aboutOverlay); });
         if (dom.sendFeedbackBtn) dom.sendFeedbackBtn.addEventListener('click', sendFeedback);
         if (dom.installBtn) dom.installBtn.addEventListener('click', installApp);
         if (dom.userPill) dom.userPill.addEventListener('click', e => { e.stopPropagation(); toggleUserDropdown(); });
@@ -1498,6 +1590,9 @@
         if (dom.settingsLang) dom.settingsLang.addEventListener('change', function() {
             localizeSettingsModal(this.value);
         });
+        if (dom.helpBtn) dom.helpBtn.addEventListener('click', openHelpOverlay);
+        if (dom.helpOverlayClose) dom.helpOverlayClose.addEventListener('click', () => closeOverlay(dom.helpOverlay));
+        if (dom.helpOverlay) dom.helpOverlay.addEventListener('click', e => { if(e.target===dom.helpOverlay) closeOverlay(dom.helpOverlay); });
     }
 
     window.addEventListener('online', () => { fetchAndRenderSchedule(true); });
