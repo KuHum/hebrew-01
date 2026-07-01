@@ -7,7 +7,7 @@
     <meta name="description" content="Offline-first tracker for the Aleph with Beth schedule">
     <title>Aleph with Beth</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234a7c8c' width='100' height='100' rx='20'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50' font-family='serif'>א</text></svg>" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23262b80' width='100' height='100' rx='20'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50' font-family='serif'>א</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <style>
         :root {
@@ -20,14 +20,14 @@
             --text-secondary: #6b6b6b;
             --text-muted: #9a9a9a;
             --text-faint: #b0b0b0;
-            --accent: #4a7c8c;
-            --accent-light: #e8f0f3;
-            --accent-dark: #385f6b;
+            --accent: #262b80;
+            --accent-light: #eef0f8;
+            --accent-dark: #1a1f66;
             --success: #6b9b7a;
             --success-light: #eaf4ed;
             --duration-bg: #f0ebe0;
             --duration-text: #8b7355;
-            --link-color: #4a7c8c;
+            --link-color: #262b80;
             --divider: #eeeae4;
             --radius-sm: 6px;
             --radius-md: 10px;
@@ -39,7 +39,7 @@
             --max-width: 720px;
             --input-bg: #faf9f7;
             --input-border: #d0ccc4;
-            --input-focus: #4a7c8c;
+            --input-focus: #262b80;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -67,15 +67,19 @@
             display: block;
             margin: 0 auto 8px;
         }
-        .app-title {
-            font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em;
-            margin-bottom: 2px; color: var(--text-primary);
-        }
         .attribution {
-            font-size: 0.65rem; color: var(--text-muted);
-            margin-bottom: 12px; line-height: 1.4;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
-        .attribution a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+        .attribution a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity var(--transition-fast);
+        }
+        .attribution a:hover { opacity: 0.8; }
 
         .total-progress-section {
             margin-top: 10px;
@@ -92,7 +96,7 @@
         }
         .progress-bar-inner {
             height: 100%;
-            background: var(--success);
+            background: var(--accent);
             border-radius: 3px;
             transition: width 0.3s ease;
         }
@@ -258,7 +262,7 @@
         .task-checkbox-wrap { flex-shrink: 0; padding-top: 1px; }
         .task-checkbox { appearance: none; width: 20px; height: 20px; border: 2px solid #d0ccc4; border-radius: 4px; cursor: pointer; background: #fff; transition: all var(--transition-fast); position: relative; }
         .task-checkbox:hover { border-color: var(--accent); background: var(--accent-light); }
-        .task-checkbox:checked { background: var(--success); border-color: var(--success); }
+        .task-checkbox:checked { background: var(--accent); border-color: var(--accent); }
         .task-checkbox:checked::after { content:''; position: absolute; left: 5px; top: 2px; width: 6px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); animation: checkPop 0.25s cubic-bezier(0.18,0.89,0.32,1.28); }
         @keyframes checkPop { 0%{transform:rotate(45deg)scale(0);}60%{transform:rotate(45deg)scale(1.3);}100%{transform:rotate(45deg)scale(1);} }
         .task-content { flex: 1; min-width: 0; line-height: 1.5; }
@@ -280,7 +284,7 @@
             transition: border-color var(--transition-fast), background var(--transition-fast);
             outline: none; margin: 0 2px; vertical-align: baseline;
         }
-        .fillable-input:focus { background: #ffffff; border-bottom-color: var(--input-focus); box-shadow: 0 1px 0 0 rgba(74,124,140,0.3); }
+        .fillable-input:focus { background: #ffffff; border-bottom-color: var(--input-focus); box-shadow: 0 1px 0 0 rgba(38,43,128,0.3); }
         .fillable-input::placeholder { color: var(--text-muted); opacity: 0.7; font-style: italic; }
 
         .app-footer { margin-top: 24px; padding: 0 0 20px; text-align: center; font-size: 0.75rem; color: var(--text-muted); }
@@ -330,6 +334,10 @@
 
         .settings-modal select { width: 100%; padding: 8px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); margin-bottom: 12px; font-family: var(--font-sans); font-size: 0.9rem; background: var(--bg); }
 
+        .help-step { margin-bottom: 12px; }
+        .help-step strong { display: block; font-size: 0.85rem; color: var(--accent); margin-bottom: 2px; }
+        .help-step span { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
         @media (max-width:480px) {
             .app-container { padding: 10px 10px 32px; }
             .app-title { font-size: 1.5rem; }
@@ -354,9 +362,8 @@
 <div class="app-container" id="appContainer">
     <header class="app-header" id="appHeader">
         <img src="./icons/logo.webp" alt="Aleph with Beth" class="header-logo">
-        <h1 class="app-title" id="appTitle">Aleph with Beth</h1>
         <p class="attribution" id="attributionText">
-            Courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>
+            <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>
         </p>
         <div class="total-progress-section" id="totalProgressSection">
             <div class="progress-bar-outer"><div class="progress-bar-inner" id="totalProgressBar" style="width:0%;"></div></div>
@@ -479,7 +486,7 @@
     const UI_LOCALE = {
         English: {
             title: "Aleph with Beth",
-            attribution: 'Courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
             loading: "Loading your learning schedule…",
             export: "Export",
             import: "Import",
@@ -519,18 +526,20 @@
             userDropdownRemove: "Remove user",
             userRemoveConfirm: 'Remove user "{0}"?',
             helpTitle: "Help",
-            helpInstructions: `View your schedule – Tap a week (e.g., “Week 1”) to expand it, then tap a day to see its tasks.
-Check off a task – Tap the checkbox. The task fades and the progress ring fills up.
-Enter a quiz score – Tap the blank (e.g., “I got _____%”) and type your score.
-Switch profiles – Tap the user pill (👤) at the top, then choose a name. You can also add or edit users from there.
-Change language/time – Tap the gear (⚙) next to the user pill, pick your options, and tap Save.
-Backup your progress – Scroll to the bottom and tap Export to save a file. Tap Import to restore it later.
-Install on Android – A small install button (↓) will appear at the bottom right corner of the screen. Tap it to add the app to your home screen.
-The app works offline after the first visit. No sign‑up needed.`
+            helpInstructions: [
+                { label: "View your schedule", desc: "Tap a week (e.g., “Week 1”) to expand it, then tap a day to see its tasks." },
+                { label: "Check off a task", desc: "Tap the checkbox. The task fades and the progress ring fills up." },
+                { label: "Enter a quiz score", desc: "Tap the blank (e.g., “I got _____%”) and type your score." },
+                { label: "Switch profiles", desc: "Tap the user pill (👤) at the top, then choose a name. You can also add or edit users from there." },
+                { label: "Change language/time", desc: "Tap the gear (⚙) next to the user pill, pick your options, and tap Save." },
+                { label: "Backup your progress", desc: "Scroll to the bottom and tap Export to save a file. Tap Import to restore it later." },
+                { label: "Install on Android", desc: "A small install button (↓) will appear at the bottom right corner of the screen. Tap it to add the app to your home screen." },
+                { label: "Offline use", desc: "The app works offline after the first visit. No sign‑up needed." }
+            ]
         },
         Arabic: {
             title: "ألف مع بيث",
-            attribution: 'بإذن من <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">ألف مع بيث</a>',
             loading: "جارٍ تحميل جدول الدراسة…",
             export: "تصدير",
             import: "استيراد",
@@ -570,18 +579,20 @@ The app works offline after the first visit. No sign‑up needed.`
             userDropdownRemove: "إزالة المستخدم",
             userRemoveConfirm: 'إزالة المستخدم "{0}"؟',
             helpTitle: "مساعدة",
-            helpInstructions: `اعرض جدولك – اضغط على أسبوع (مثل "الأسبوع 1") لتوسيعه، ثم اضغط على يوم لرؤية مهامه.
-حدد مهمة – اضغط على مربع الاختيار. ستتضاءل المهمة وتمتلئ حلقة التقدم.
-أدخل درجة الاختبار – اضغط على الفراغ (مثل "حصلت على _____%") واكتب درجتك.
-بدّل المستخدمين – اضغط على زر المستخدم (👤) في الأعلى، ثم اختر اسمًا. يمكنك أيضًا إضافة مستخدمين أو تعديلهم من هناك.
-غيّر اللغة/الوقت – اضغط على الترس (⚙) بجانب زر المستخدم، اختر خياراتك، ثم اضغط حفظ.
-انسخ تقدمك احتياطيًا – مرر إلى الأسفل واضغط تصدير لحفظ ملف. اضغط استيراد لاستعادته لاحقًا.
-التثبيت على أندرويد – سيظهر زر تثبيت صغير (↓) في الركن الأيمن السفلي من الشاشة. اضغط عليه لإضافة التطبيق إلى شاشتك الرئيسية.
-يعمل التطبيق دون اتصال بعد الزيارة الأولى. لا حاجة للتسجيل.`
+            helpInstructions: [
+                { label: "اعرض جدولك", desc: "اضغط على أسبوع (مثل \"الأسبوع 1\") لتوسيعه، ثم اضغط على يوم لرؤية مهامه." },
+                { label: "حدد مهمة", desc: "اضغط على مربع الاختيار. ستتضاءل المهمة وتمتلئ حلقة التقدم." },
+                { label: "أدخل درجة الاختبار", desc: "اضغط على الفراغ (مثل \"حصلت على _____%\") واكتب درجتك." },
+                { label: "بدّل المستخدمين", desc: "اضغط على زر المستخدم (👤) في الأعلى، ثم اختر اسمًا. يمكنك أيضًا إضافة مستخدمين أو تعديلهم من هناك." },
+                { label: "غيّر اللغة/الوقت", desc: "اضغط على الترس (⚙) بجانب زر المستخدم، اختر خياراتك، ثم اضغط حفظ." },
+                { label: "انسخ تقدمك احتياطيًا", desc: "مرر إلى الأسفل واضغط تصدير لحفظ ملف. اضغط استيراد لاستعادته لاحقًا." },
+                { label: "التثبيت على أندرويد", desc: "سيظهر زر تثبيت صغير (↓) في الركن الأيمن السفلي من الشاشة. اضغط عليه لإضافة التطبيق إلى شاشتك الرئيسية." },
+                { label: "استخدام دون اتصال", desc: "يعمل التطبيق دون اتصال بعد الزيارة الأولى. لا حاجة للتسجيل." }
+            ]
         },
         Mandarin: {
             title: "与Beth的Aleph",
-            attribution: '感谢 <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">与Beth的Aleph</a>',
             loading: "正在加载学习计划…",
             export: "导出",
             import: "导入",
@@ -621,18 +632,20 @@ The app works offline after the first visit. No sign‑up needed.`
             userDropdownRemove: "删除用户",
             userRemoveConfirm: '删除用户 "{0}"？',
             helpTitle: "帮助",
-            helpInstructions: `查看您的日程 – 点击一周（例如“第一周”）展开，然后点击一天查看其任务。
-勾选任务 – 点击复选框。任务会淡出，进度环会填满。
-输入测验成绩 – 点击空白处（例如“我得了 _____%”）并输入您的分数。
-切换用户 – 点击顶部的用户按钮 (👤)，然后选择一个名字。您也可以在那里添加或编辑用户。
-更改语言/时间 – 点击用户按钮旁边的齿轮 (⚙)，选择您的选项，然后点击保存。
-备份您的进度 – 滚动到底部并点击导出以保存文件。点击导入以恢复。
-在安卓上安装 – 屏幕右下角会出现一个小的安装按钮 (↓)。点击它将应用添加到您的主屏幕。
-首次访问后，应用可离线使用。无需注册。`
+            helpInstructions: [
+                { label: "查看您的日程", desc: "点击一周（例如“第一周”）展开，然后点击一天查看其任务。" },
+                { label: "勾选任务", desc: "点击复选框。任务会淡出，进度环会填满。" },
+                { label: "输入测验成绩", desc: "点击空白处（例如“我得了 _____%”）并输入您的分数。" },
+                { label: "切换用户", desc: "点击顶部的用户按钮 (👤)，然后选择一个名字。您也可以在那里添加或编辑用户。" },
+                { label: "更改语言/时间", desc: "点击用户按钮旁边的齿轮 (⚙)，选择您的选项，然后点击保存。" },
+                { label: "备份您的进度", desc: "滚动到底部并点击导出以保存文件。点击导入以恢复。" },
+                { label: "在安卓上安装", desc: "屏幕右下角会出现一个小的安装按钮 (↓)。点击它将应用添加到您的主屏幕。" },
+                { label: "离线使用", desc: "首次访问后，应用可离线使用。无需注册。" }
+            ]
         },
         French: {
             title: "Aleph avec Beth",
-            attribution: 'Avec l\'aimable autorisation de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph avec Beth</a>',
             loading: "Chargement de votre programme d'apprentissage…",
             export: "Exporter",
             import: "Importer",
@@ -672,18 +685,20 @@ The app works offline after the first visit. No sign‑up needed.`
             userDropdownRemove: "Supprimer l'utilisateur",
             userRemoveConfirm: 'Supprimer l\'utilisateur "{0}" ?',
             helpTitle: "Aide",
-            helpInstructions: `Voir votre programme – Appuyez sur une semaine (ex. « Semaine 1 ») pour la développer, puis appuyez sur un jour pour voir ses tâches.
-Cocher une tâche – Appuyez sur la case à cocher. La tâche s'estompe et l'anneau de progression se remplit.
-Entrer un score de quiz – Appuyez sur le blanc (ex. « J'ai obtenu _____% ») et tapez votre score.
-Changer de profil – Appuyez sur la pastille utilisateur (👤) en haut, puis choisissez un nom. Vous pouvez également ajouter ou modifier des utilisateurs à partir de là.
-Changer la langue/le temps – Appuyez sur l'engrenage (⚙) à côté de la pastille utilisateur, choisissez vos options, puis appuyez sur Enregistrer.
-Sauvegarder votre progression – Faites défiler vers le bas et appuyez sur Exporter pour enregistrer un fichier. Appuyez sur Importer pour le restaurer plus tard.
-Installer sur Android – Un petit bouton d'installation (↓) apparaîtra dans le coin inférieur droit de l'écran. Appuyez dessus pour ajouter l'application à votre écran d'accueil.
-L'application fonctionne hors ligne après la première visite. Aucune inscription nécessaire.`
+            helpInstructions: [
+                { label: "Voir votre programme", desc: "Appuyez sur une semaine (ex. « Semaine 1 ») pour la développer, puis appuyez sur un jour pour voir ses tâches." },
+                { label: "Cocher une tâche", desc: "Appuyez sur la case à cocher. La tâche s'estompe et l'anneau de progression se remplit." },
+                { label: "Entrer un score de quiz", desc: "Appuyez sur le blanc (ex. « J'ai obtenu _____% ») et tapez votre score." },
+                { label: "Changer de profil", desc: "Appuyez sur la pastille utilisateur (👤) en haut, puis choisissez un nom. Vous pouvez également ajouter ou modifier des utilisateurs à partir de là." },
+                { label: "Changer la langue/le temps", desc: "Appuyez sur l'engrenage (⚙) à côté de la pastille utilisateur, choisissez vos options, puis appuyez sur Enregistrer." },
+                { label: "Sauvegarder votre progression", desc: "Faites défiler vers le bas et appuyez sur Exporter pour enregistrer un fichier. Appuyez sur Importer pour le restaurer plus tard." },
+                { label: "Installer sur Android", desc: "Un petit bouton d'installation (↓) apparaîtra dans le coin inférieur droit de l'écran. Appuyez dessus pour ajouter l'application à votre écran d'accueil." },
+                { label: "Utilisation hors ligne", desc: "L'application fonctionne hors ligne après la première visite. Aucune inscription nécessaire." }
+            ]
         },
         Russian: {
             title: "Алеф с Бет",
-            attribution: 'Предоставлено <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Алеф с Бет</a>',
             loading: "Загрузка учебного расписания…",
             export: "Экспорт",
             import: "Импорт",
@@ -723,18 +738,20 @@ L'application fonctionne hors ligne après la première visite. Aucune inscripti
             userDropdownRemove: "Удалить пользователя",
             userRemoveConfirm: 'Удалить пользователя "{0}"?',
             helpTitle: "Помощь",
-            helpInstructions: `Просмотр расписания – Нажмите на неделю (например, «Неделя 1»), чтобы развернуть её, затем нажмите на день, чтобы увидеть задания.
-Отметка задания – Нажмите на флажок. Задание потускнеет, а кольцо прогресса заполнится.
-Ввод результата теста – Нажмите на пропуск (например, «Я набрал _____%») и введите свой результат.
-Смена пользователя – Нажмите на значок пользователя (👤) вверху, затем выберите имя. Там же можно добавить или изменить пользователей.
-Изменение языка/времени – Нажмите на шестерёнку (⚙) рядом со значком пользователя, выберите параметры и нажмите «Сохранить».
-Резервное копирование прогресса – Прокрутите вниз и нажмите «Экспорт», чтобы сохранить файл. Нажмите «Импорт», чтобы восстановить его позже.
-Установка на Android – В правом нижнем углу экрана появится маленькая кнопка установки (↓). Нажмите её, чтобы добавить приложение на главный экран.
-Приложение работает офлайн после первого посещения. Регистрация не требуется.`
+            helpInstructions: [
+                { label: "Просмотр расписания", desc: "Нажмите на неделю (например, «Неделя 1»), чтобы развернуть её, затем нажмите на день, чтобы увидеть задания." },
+                { label: "Отметка задания", desc: "Нажмите на флажок. Задание потускнеет, а кольцо прогресса заполнится." },
+                { label: "Ввод результата теста", desc: "Нажмите на пропуск (например, «Я набрал _____%») и введите свой результат." },
+                { label: "Смена пользователя", desc: "Нажмите на значок пользователя (👤) вверху, затем выберите имя. Там же можно добавить или изменить пользователей." },
+                { label: "Изменение языка/времени", desc: "Нажмите на шестерёнку (⚙) рядом со значком пользователя, выберите параметры и нажмите «Сохранить»." },
+                { label: "Резервное копирование прогресса", desc: "Прокрутите вниз и нажмите «Экспорт», чтобы сохранить файл. Нажмите «Импорт», чтобы восстановить его позже." },
+                { label: "Установка на Android", desc: "В правом нижнем углу экрана появится маленькая кнопка установки (↓). Нажмите её, чтобы добавить приложение на главный экран." },
+                { label: "Офлайн-использование", desc: "Приложение работает офлайн после первого посещения. Регистрация не требуется." }
+            ]
         },
         Spanish: {
             title: "Aleph con Beth",
-            attribution: 'Cortesía de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>',
+            attribution: '<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph con Beth</a>',
             loading: "Cargando tu plan de estudios…",
             export: "Exportar",
             import: "Importar",
@@ -774,14 +791,16 @@ L'application fonctionne hors ligne après la première visite. Aucune inscripti
             userDropdownRemove: "Eliminar usuario",
             userRemoveConfirm: '¿Eliminar usuario "{0}"?',
             helpTitle: "Ayuda",
-            helpInstructions: `Ver tu plan – Toca una semana (ej. “Semana 1”) para expandirla, luego toca un día para ver sus tareas.
-Marcar una tarea – Toca la casilla de verificación. La tarea se atenúa y el anillo de progreso se llena.
-Ingresar una puntuación de prueba – Toca el espacio en blanco (ej. “Obtuve _____%”) y escribe tu puntuación.
-Cambiar de perfil – Toca la pastilla de usuario (👤) en la parte superior, luego elige un nombre. También puedes agregar o editar usuarios desde allí.
-Cambiar idioma/tiempo – Toca el engranaje (⚙) junto a la pastilla de usuario, elige tus opciones y toca Guardar.
-Respaldar tu progreso – Desplázate hasta abajo y toca Exportar para guardar un archivo. Toca Importar para restaurarlo más tarde.
-Instalar en Android – Aparecerá un pequeño botón de instalación (↓) en la esquina inferior derecha de la pantalla. Tócalo para agregar la aplicación a tu pantalla de inicio.
-La aplicación funciona sin conexión después de la primera visita. No es necesario registrarse.`
+            helpInstructions: [
+                { label: "Ver tu plan", desc: "Toca una semana (ej. “Semana 1”) para expandirla, luego toca un día para ver sus tareas." },
+                { label: "Marcar una tarea", desc: "Toca la casilla de verificación. La tarea se atenúa y el anillo de progreso se llena." },
+                { label: "Ingresar una puntuación de prueba", desc: "Toca el espacio en blanco (ej. “Obtuve _____%”) y escribe tu puntuación." },
+                { label: "Cambiar de perfil", desc: "Toca la pastilla de usuario (👤) en la parte superior, luego elige un nombre. También puedes agregar o editar usuarios desde allí." },
+                { label: "Cambiar idioma/tiempo", desc: "Toca el engranaje (⚙) junto a la pastilla de usuario, elige tus opciones y toca Guardar." },
+                { label: "Respaldar tu progreso", desc: "Desplázate hasta abajo y toca Exportar para guardar un archivo. Toca Importar para restaurarlo más tarde." },
+                { label: "Instalar en Android", desc: "Aparecerá un pequeño botón de instalación (↓) en la esquina inferior derecha de la pantalla. Tócalo para agregar la aplicación a tu pantalla de inicio." },
+                { label: "Uso sin conexión", desc: "La aplicación funciona sin conexión después de la primera visita. No es necesario registrarse." }
+            ]
         }
     };
 
@@ -791,7 +810,6 @@ La aplicación funciona sin conexión después de la primera visita. No es neces
 
     function applyLocale(lang) {
         const loc = getUILocale(lang);
-        if (dom.appTitle) dom.appTitle.textContent = loc.title;
         if (dom.attributionText) dom.attributionText.innerHTML = loc.attribution;
         if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
         if (dom.exportLabel) dom.exportLabel.textContent = loc.export;
@@ -863,7 +881,6 @@ La aplicación funciona sin conexión después de la primera visita. No es neces
         dom.settingsModalTitle = document.getElementById('settingsModalTitle');
         dom.settingsLangLabel = document.getElementById('settingsLangLabel');
         dom.settingsTimeLabel = document.getElementById('settingsTimeLabel');
-        dom.appTitle = document.getElementById('appTitle');
         dom.attributionText = document.getElementById('attributionText');
         dom.exportLabel = document.getElementById('exportLabel');
         dom.importLabel = document.getElementById('importLabel');
@@ -1109,9 +1126,12 @@ La aplicación funciona sin conexión después de la primera visita. No es neces
         return `https://leekehlerdesign.ca/LearningSchedule/html/${prog}Sched_T${time}_${lang}.htm`;
     }
 
-    async function fetchWithTimeout(url, timeoutMs = 20000) {
+    async function fetchWithTimeout(url, timeoutMs = 20000, signal = null) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
+        if (signal) {
+            signal.addEventListener('abort', () => controller.abort());
+        }
         try {
             const resp = await fetch(url, { signal: controller.signal });
             clearTimeout(timer);
@@ -1259,8 +1279,8 @@ La aplicación funciona sin conexión después de la primera visita. No es neces
         const complete = percent >= 100;
         return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
                 <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--card-border)" stroke-width="${strokeWidth}" />
-                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--success)" stroke-width="${strokeWidth}" stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${size/2} ${size/2})" style="transition: stroke-dashoffset 0.3s ease;" />
-                ${complete ? `<polyline points="${size*0.3},${size*0.55} ${size*0.45},${size*0.7} ${size*0.7},${size*0.4}" fill="none" stroke="var(--success)" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${size/2} ${size/2})" style="transition: stroke-dashoffset 0.3s ease;" />
+                ${complete ? `<polyline points="${size*0.3},${size*0.55} ${size*0.45},${size*0.7} ${size*0.7},${size*0.4}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />` : ''}
             </svg>`;
     }
 
@@ -1499,7 +1519,15 @@ La aplicación funciona sin conexión después de la primera visita. No es neces
     function openHelpOverlay() {
         const loc = getUILocale(getScheduleSettings().lang);
         if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
-        if (dom.helpContent) dom.helpContent.innerText = loc.helpInstructions;
+        if (dom.helpContent) {
+            dom.helpContent.innerHTML = '';
+            loc.helpInstructions.forEach(step => {
+                const div = document.createElement('div');
+                div.className = 'help-step';
+                div.innerHTML = `<strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.desc)}</span>`;
+                dom.helpContent.appendChild(div);
+            });
+        }
         openOverlay(dom.helpOverlay);
     }
 
