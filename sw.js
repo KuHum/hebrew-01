@@ -1,17 +1,17 @@
 // ============================================================
 // Service Worker for Aleph with Beth Tracker
 // ============================================================
-const CACHE_NAME = 'aleph-beth-v24';
+const CACHE_NAME = 'aleph-beth-v25';
 
 const STATIC_ASSETS = [
     './',
     './index.html',
     './manifest.json',
+    './program-names.json',
 ];
 
 const STALE_WHILE_REVALIDATE = [
     './index.html',
-    './lessons.md',
 ];
 
 self.addEventListener('install', (event) => {
