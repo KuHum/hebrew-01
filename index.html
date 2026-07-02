@@ -781,21 +781,36 @@
 
     let localizationCache = null;
     async function fetchLocalization() {
-        if (localizationCache) return localizationCache;
-        try {
-            const resp = await fetch(LOCALIZATION_URL);
-            if (!resp.ok) throw new Error('Failed to fetch localization');
-            const text = await resp.text();
-            const match = text.match(/var localization = ({[\s\S]*?});/);
-            if (match) {
-                localizationCache = eval('(' + match[1] + ')');
-                return localizationCache;
-            }
-        } catch(e) {
-            console.warn('Could not fetch localization, falling back to English.');
+    if (localizationCache) return localizationCache;
+    try {
+        // Try direct first (works on some devices / if CORS ever enabled)
+        let resp = await fetch(LOCALIZATION_URL);
+        if (!resp.ok) throw new Error('Direct fetch failed');
+        const text = await resp.text();
+        const match = text.match(/var localization = ({[\s\S]*?});/);
+        if (match) {
+            localizationCache = eval('(' + match[1] + ')');
+            return localizationCache;
         }
-        return null;
+    } catch(e) { /* direct failed, try proxy */ }
+
+    try {
+        // Use your Cloudflare Worker as proxy
+        const proxyUrl = CORS_WORKER + encodeURIComponent(LOCALIZATION_URL);
+        const resp = await fetch(proxyUrl);
+        if (!resp.ok) throw new Error('Proxy fetch failed');
+        const text = await resp.text();
+        const match = text.match(/var localization = ({[\s\S]*?});/);
+        if (match) {
+            localizationCache = eval('(' + match[1] + ')');
+            return localizationCache;
+        }
+    } catch(e) {
+        console.warn('Could not fetch localization, falling back to English.');
     }
+    return null;
+}
+
 
     function getProgramName(lang) {
         if (localizationCache && localizationCache[lang] && localizationCache[lang].Aleph) {
