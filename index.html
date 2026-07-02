@@ -466,7 +466,7 @@
     };
 
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
-    const LOCALIZATION_URL = 'https://leekehlerdesign.ca/LearningSchedule/js/localization.js';
+    const LOCAL_PROGRAM_NAMES_URL = './program-names.json';
 
     const NATIVE_NAMES = {
         "Afrikaans": "Afrikaans","Albanian": "Shqip","Amharic": "አማርኛ","Arabic": "العربية","Assamese": "অসমীয়া",
@@ -480,6 +480,16 @@
         "Russian": "Русский","Serbian": "Српски","Sindhi": "سنڌي","Spanish": "Español","Swahili": "Kiswahili",
         "Swedish": "Svenska","Tagalog": "Tagalog","Tamil": "தமிழ்","Telugu": "తెలుగు","Thai": "ไทย",
         "Tok Pisin": "Tok Pisin","Turkish": "Türkçe","Vietnamese": "Tiếng Việt","Urdu": "اردو"
+    };
+
+    // ── Built‑in fallback for the six UI languages ──
+    const BUILTIN_PROGRAM_NAMES = {
+        English: 'Aleph with Beth',
+        Arabic: 'ألف مع بيث',
+        Mandarin: '与Beth的Aleph',
+        French: 'Aleph avec Beth',
+        Russian: 'Алеф с Бет',
+        Spanish: 'Aleph con Beth'
     };
 
     const UI_LOCALE = {
@@ -779,47 +789,25 @@
         }
     };
 
-    let localizationCache = null;
-    async function fetchLocalization() {
-    if (localizationCache) return localizationCache;
-    try {
-        // Try direct first (works on some devices / if CORS ever enabled)
-        let resp = await fetch(LOCALIZATION_URL);
-        if (!resp.ok) throw new Error('Direct fetch failed');
-        const text = await resp.text();
-        const match = text.match(/var localization = ({[\s\S]*?});/);
-        if (match) {
-            localizationCache = eval('(' + match[1] + ')');
-            return localizationCache;
-        }
-    } catch(e) { /* direct failed, try proxy */ }
+    // ── Program name cache (loaded from local JSON) ──
+    let programNamesCache = null;
 
-    try {
-        // Use your Cloudflare Worker as proxy
-        const proxyUrl = CORS_WORKER + encodeURIComponent(LOCALIZATION_URL);
-        const resp = await fetch(proxyUrl);
-        if (!resp.ok) throw new Error('Proxy fetch failed');
-        const text = await resp.text();
-        const match = text.match(/var localization = ({[\s\S]*?});/);
-        if (match) {
-            localizationCache = eval('(' + match[1] + ')');
-            return localizationCache;
-        }
-    } catch(e) {
-        console.warn('Could not fetch localization, falling back to English.');
+    async function fetchProgramNames() {
+        if (programNamesCache) return programNamesCache;
+        try {
+            const resp = await fetch(LOCAL_PROGRAM_NAMES_URL);
+            if (resp.ok) {
+                programNamesCache = await resp.json();
+                return programNamesCache;
+            }
+        } catch(e) { /* use fallback */ }
+        programNamesCache = BUILTIN_PROGRAM_NAMES;
+        return programNamesCache;
     }
-    return null;
-}
-
 
     function getProgramName(lang) {
-        if (localizationCache && localizationCache[lang] && localizationCache[lang].Aleph) {
-            return localizationCache[lang].Aleph;
-        }
-        if (localizationCache && localizationCache['English'] && localizationCache['English'].Aleph) {
-            return localizationCache['English'].Aleph;
-        }
-        return 'Aleph with Beth';
+        if (programNamesCache && programNamesCache[lang]) return programNamesCache[lang];
+        return BUILTIN_PROGRAM_NAMES[lang] || 'Aleph with Beth';
     }
 
     function getUILocale(lang) {
@@ -988,7 +976,6 @@
         if (currentUser) {
             dom.userPillName.textContent = currentUser;
             dom.userPillName.style.display = '';
-            // show chevron
             const chevron = dom.userPill.querySelector('.chevron-down');
             if (chevron) chevron.style.display = '';
         } else {
@@ -1594,7 +1581,7 @@
     async function initApp() {
         cacheDomReferences();
         checkInstalled();
-        await fetchLocalization();
+        await fetchProgramNames();   // load local JSON with program names
         migrateOldDataIfNeeded();
         currentUser = getCurrentUser();
         updateUserPill();
