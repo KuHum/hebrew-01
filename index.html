@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f3ef">
     <meta name="description" content="Offline-first tracker for the Aleph with Beth schedule">
-    <title>Aleph with Beth</title>
+    <title id="pageTitle">Aleph with Beth</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="./icons/icon-64.png" type="image/png">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -467,6 +467,58 @@
 
     const CORS_WORKER = 'https://hebrew-cors.humconsults.workers.dev/?url=';
     const LOCAL_PROGRAM_NAMES_URL = './program-names.json';
+    const LOCALES_PATH = './locales/';
+
+    // Minimal English fallback (used if fetch fails completely)
+    const FALLBACK_LOCALE = {
+        loading: "Loading your learning schedule…",
+        export: "Export",
+        import: "Import",
+        aboutLabel: "About & Contact",
+        aboutTitle: "{programName}",
+        aboutVersion: "Version",
+        aboutType: "Study Tracker",
+        aboutDesc: "<strong>{programName}</strong> is a free, offline‑first study tracker based on the <a href=\"https://freehebrew.online/\" target=\"_blank\" rel=\"noopener noreferrer\">{programName}</a> curriculum. It helps you work through the video lessons day‑by‑day, check off tasks, record quiz scores, and never lose your place – even without internet.",
+        aboutFeaturesTitle: "Features",
+        aboutFeaturesList: "• Dynamic schedule from Aleph with Beth / Alpha with Angela<br>• Offline‑first – works entirely without internet after first visit<br>• Fillable blanks for quiz scores<br>• Progress tracking with percentage and visual bars<br>• Export / import progress to back up or move devices<br>• Installable as a standalone app",
+        aboutCreditsTitle: "Credits",
+        aboutCreditsText: "Curriculum courtesy of <a href=\"https://freehebrew.online/\" target=\"_blank\" rel=\"noopener noreferrer\">{programName}</a> (public domain). Built with love by <a href=\"https://kutosi.com\" target=\"_blank\" rel=\"noopener noreferrer\">Humphrey Kutosi</a>, a member of <a href=\"https://petrareformedbaptistchurch.org/\" target=\"_blank\" rel=\"noopener noreferrer\">Petra Reformed Baptist Church</a>.",
+        aboutGlory: "For the glory of God alone.",
+        feedbackHeader: "💬 Send a Message",
+        feedbackSubtitle: "Report a bug, suggest a feature, or just say hi.",
+        feedbackNamePlaceholder: "Your name",
+        feedbackEmailPlaceholder: "Your email",
+        feedbackTextareaPlaceholder: "Your message…",
+        sendLabel: "Send Message",
+        feedbackNote: "Sent directly to the developer.",
+        userModalTitleEdit: "Edit Name",
+        userModalTitleAdd: "Add User",
+        userModalPlaceholder: "Enter name",
+        cancel: "Cancel",
+        save: "Save",
+        settingsTitle: "Schedule Settings",
+        langLabel: "Language",
+        timeLabel: "Time per day",
+        retry: "Try Again",
+        noData: "No schedule data found.",
+        errorLoad: "Unable to load schedule.",
+        errorCheckConnection: "Check your connection and try again.",
+        userDropdownEdit: "Edit name",
+        userDropdownAdd: "Add user",
+        userDropdownRemove: "Remove user",
+        userRemoveConfirm: "Remove user \"{0}\"?",
+        helpTitle: "Help",
+        helpInstructions: [
+            { label: "View your schedule", desc: "Tap a week (e.g., “Week 1”) to expand it, then tap a day to see its tasks." },
+            { label: "Check off a task", desc: "Tap the checkbox. The task fades and the progress ring fills up." },
+            { label: "Enter a quiz score", desc: "Tap the blank (e.g., “I got _____%”) and type your score." },
+            { label: "Switch profiles", desc: "Tap the user pill (👤) at the top, then choose a name. You can also add or edit users from there." },
+            { label: "Change language/time", desc: "Tap the gear (⚙) next to the user pill, pick your options, and tap Save." },
+            { label: "Backup your progress", desc: "Scroll to the bottom and tap Export to save a file. Tap Import to restore it later." },
+            { label: "Install on Android", desc: "A small install button (↓) will appear at the bottom right corner of the screen. Tap it to add the app to your home screen." },
+            { label: "Offline use", desc: "The app works offline after the first visit. No sign‑up needed." }
+        ]
+    };
 
     const NATIVE_NAMES = {
         "Afrikaans": "Afrikaans","Albanian": "Shqip","Amharic": "አማርኛ","Arabic": "العربية","Assamese": "অসমীয়া",
@@ -482,314 +534,7 @@
         "Tok Pisin": "Tok Pisin","Turkish": "Türkçe","Vietnamese": "Tiếng Việt","Urdu": "اردو"
     };
 
-    // ── Built‑in fallback for the six UI languages ──
-    const BUILTIN_PROGRAM_NAMES = {
-        English: 'Aleph with Beth',
-        Arabic: 'ألف مع بيث',
-        Mandarin: '与Beth的Aleph',
-        French: 'Aleph avec Beth',
-        Russian: 'Алеф с Бет',
-        Spanish: 'Aleph con Beth'
-    };
-
-    const UI_LOCALE = {
-        English: {
-            loading: "Loading your learning schedule…",
-            export: "Export",
-            import: "Import",
-            aboutLabel: "About & Contact",
-            aboutTitle: "Aleph with Beth",
-            aboutVersion: "Version",
-            aboutType: "Study Tracker",
-            aboutDesc: '<strong>Aleph with Beth</strong> is a free, offline‑first study tracker based on the <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> curriculum. It helps you work through the video lessons day‑by‑day, check off tasks, record quiz scores, and never lose your place – even without internet.',
-            aboutFeaturesTitle: "Features",
-            aboutFeaturesList: "• Dynamic schedule from Aleph with Beth / Alpha with Angela<br>• Offline‑first – works entirely without internet after first visit<br>• Fillable blanks for quiz scores<br>• Progress tracking with percentage and visual bars<br>• Export / import progress to back up or move devices<br>• Installable as a standalone app",
-            aboutCreditsTitle: "Credits",
-            aboutCreditsText: 'Curriculum courtesy of <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (public domain). Built with love by <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>, a member of <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a>.',
-            aboutGlory: "For the glory of God alone.",
-            feedbackHeader: "💬 Send a Message",
-            feedbackSubtitle: "Report a bug, suggest a feature, or just say hi.",
-            feedbackNamePlaceholder: "Your name",
-            feedbackEmailPlaceholder: "Your email",
-            feedbackTextareaPlaceholder: "Your message…",
-            sendLabel: "Send Message",
-            feedbackNote: "Sent directly to the developer.",
-            userModalTitleEdit: "Edit Name",
-            userModalTitleAdd: "Add User",
-            userModalPlaceholder: "Enter name",
-            cancel: "Cancel",
-            save: "Save",
-            settingsTitle: "Schedule Settings",
-            langLabel: "Language",
-            timeLabel: "Time per day",
-            retry: "Try Again",
-            noData: "No schedule data found.",
-            errorLoad: "Unable to load schedule.",
-            errorCheckConnection: "Check your connection and try again.",
-            userDropdownEdit: "Edit name",
-            userDropdownAdd: "Add user",
-            userDropdownRemove: "Remove user",
-            userRemoveConfirm: 'Remove user "{0}"?',
-            helpTitle: "Help",
-            helpInstructions: [
-                { label: "View your schedule", desc: "Tap a week (e.g., “Week 1”) to expand it, then tap a day to see its tasks." },
-                { label: "Check off a task", desc: "Tap the checkbox. The task fades and the progress ring fills up." },
-                { label: "Enter a quiz score", desc: "Tap the blank (e.g., “I got _____%”) and type your score." },
-                { label: "Switch profiles", desc: "Tap the user pill (👤) at the top, then choose a name. You can also add or edit users from there." },
-                { label: "Change language/time", desc: "Tap the gear (⚙) next to the user pill, pick your options, and tap Save." },
-                { label: "Backup your progress", desc: "Scroll to the bottom and tap Export to save a file. Tap Import to restore it later." },
-                { label: "Install on Android", desc: "A small install button (↓) will appear at the bottom right corner of the screen. Tap it to add the app to your home screen." },
-                { label: "Offline use", desc: "The app works offline after the first visit. No sign‑up needed." }
-            ]
-        },
-        Arabic: {
-            loading: "جارٍ تحميل جدول الدراسة…",
-            export: "تصدير",
-            import: "استيراد",
-            aboutLabel: "حول واتصل",
-            aboutTitle: "ألف مع بيث",
-            aboutVersion: "الإصدار",
-            aboutType: "متتبّع الدراسة",
-            aboutDesc: '<strong>ألف مع بيث</strong> هو متتبّع دراسة مجاني يعمل دون اتصال، مبني على منهج <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>. يساعدك على متابعة دروس الفيديو يومًا بيوم، والتحقق من المهام، وتسجيل نتائج الاختبارات، وعدم فقدان مكانك أبدًا – حتى بدون إنترنت.',
-            aboutFeaturesTitle: "المميزات",
-            aboutFeaturesList: "• جدول ديناميكي من Aleph with Beth / Alpha with Angela<br>• يعمل دون اتصال – يعمل بالكامل بدون إنترنت بعد الزيارة الأولى<br>• فراغات قابلة للتعبئة لنتائج الاختبارات<br>• تتبع التقدم مع نسبة مئوية وأشرطة مرئية<br>• تصدير / استيراد التقدم للنسخ الاحتياطي أو النقل بين الأجهزة<br>• قابل للتثبيت كتطبيق مستقل",
-            aboutCreditsTitle: "الاعتمادات",
-            aboutCreditsText: 'المنهج بإذن من <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (ملكية عامة). بُني بحب من <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>، عضو في <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">كنيسة بترا المعمدانية المُصلَحة</a>.',
-            aboutGlory: "لمجد الله وحده.",
-            feedbackHeader: "💬 أرسل رسالة",
-            feedbackSubtitle: "أبلغ عن خطأ، أو اقترح ميزة، أو فقط قل مرحبًا.",
-            feedbackNamePlaceholder: "اسمك",
-            feedbackEmailPlaceholder: "بريدك الإلكتروني",
-            feedbackTextareaPlaceholder: "رسالتك…",
-            sendLabel: "أرسل الرسالة",
-            feedbackNote: "تُرسل مباشرة إلى المطوّر.",
-            userModalTitleEdit: "تعديل الاسم",
-            userModalTitleAdd: "إضافة مستخدم",
-            userModalPlaceholder: "أدخل الاسم",
-            cancel: "إلغاء",
-            save: "حفظ",
-            settingsTitle: "إعدادات الجدول",
-            langLabel: "اللغة",
-            timeLabel: "الوقت في اليوم",
-            retry: "حاول مرة أخرى",
-            noData: "لم يتم العثور على جدول.",
-            errorLoad: "تعذّر تحميل الجدول.",
-            errorCheckConnection: "تحقق من اتصالك وحاول مرة أخرى.",
-            userDropdownEdit: "تعديل الاسم",
-            userDropdownAdd: "إضافة مستخدم",
-            userDropdownRemove: "إزالة المستخدم",
-            userRemoveConfirm: 'إزالة المستخدم "{0}"؟',
-            helpTitle: "مساعدة",
-            helpInstructions: [
-                { label: "اعرض جدولك", desc: "اضغط على أسبوع (مثل \"الأسبوع 1\") لتوسيعه، ثم اضغط على يوم لرؤية مهامه." },
-                { label: "حدد مهمة", desc: "اضغط على مربع الاختيار. ستتضاءل المهمة وتمتلئ حلقة التقدم." },
-                { label: "أدخل درجة الاختبار", desc: "اضغط على الفراغ (مثل \"حصلت على _____%\") واكتب درجتك." },
-                { label: "بدّل المستخدمين", desc: "اضغط على زر المستخدم (👤) في الأعلى، ثم اختر اسمًا. يمكنك أيضًا إضافة مستخدمين أو تعديلهم من هناك." },
-                { label: "غيّر اللغة/الوقت", desc: "اضغط على الترس (⚙) بجانب زر المستخدم، اختر خياراتك، ثم اضغط حفظ." },
-                { label: "انسخ تقدمك احتياطيًا", desc: "مرر إلى الأسفل واضغط تصدير لحفظ ملف. اضغط استيراد لاستعادته لاحقًا." },
-                { label: "التثبيت على أندرويد", desc: "سيظهر زر تثبيت صغير (↓) في الركن الأيمن السفلي من الشاشة. اضغط عليه لإضافة التطبيق إلى شاشتك الرئيسية." },
-                { label: "استخدام دون اتصال", desc: "يعمل التطبيق دون اتصال بعد الزيارة الأولى. لا حاجة للتسجيل." }
-            ]
-        },
-        Mandarin: {
-            loading: "正在加载学习计划…",
-            export: "导出",
-            import: "导入",
-            aboutLabel: "关于与联系",
-            aboutTitle: "与Beth的Aleph",
-            aboutVersion: "版本",
-            aboutType: "学习追踪器",
-            aboutDesc: '<strong>与Beth的Aleph</strong> 是一个免费的离线优先学习追踪器，基于 <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> 课程。它帮助您逐天完成视频课程，勾选任务，记录测验成绩，并永不丢失进度——即使没有互联网。',
-            aboutFeaturesTitle: "功能",
-            aboutFeaturesList: "• 来自 Aleph with Beth / Alpha with Angela 的动态课程<br>• 离线优先 – 首次访问后完全无需互联网即可工作<br>• 可填写的测验成绩空白<br>• 带有百分比和视觉条的进度跟踪<br>• 导出/导入进度以备份或迁移设备<br>• 可作为独立应用安装",
-            aboutCreditsTitle: "鸣谢",
-            aboutCreditsText: '课程感谢 <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>（公共领域）。由 <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a> 充满爱心地构建，<a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a> 成员。',
-            aboutGlory: "唯独为了上帝的荣耀。",
-            feedbackHeader: "💬 发送消息",
-            feedbackSubtitle: "报告错误，建议功能，或只是打个招呼。",
-            feedbackNamePlaceholder: "您的名字",
-            feedbackEmailPlaceholder: "您的电子邮件",
-            feedbackTextareaPlaceholder: "您的消息…",
-            sendLabel: "发送消息",
-            feedbackNote: "直接发送给开发者。",
-            userModalTitleEdit: "编辑名称",
-            userModalTitleAdd: "添加用户",
-            userModalPlaceholder: "输入名称",
-            cancel: "取消",
-            save: "保存",
-            settingsTitle: "课程设置",
-            langLabel: "语言",
-            timeLabel: "每天时间",
-            retry: "再试一次",
-            noData: "未找到课程数据。",
-            errorLoad: "无法加载课程。",
-            errorCheckConnection: "请检查您的连接并重试。",
-            userDropdownEdit: "编辑名称",
-            userDropdownAdd: "添加用户",
-            userDropdownRemove: "删除用户",
-            userRemoveConfirm: '删除用户 "{0}"？',
-            helpTitle: "帮助",
-            helpInstructions: [
-                { label: "查看您的日程", desc: "点击一周（例如“第一周”）展开，然后点击一天查看其任务。" },
-                { label: "勾选任务", desc: "点击复选框。任务会淡出，进度环会填满。" },
-                { label: "输入测验成绩", desc: "点击空白处（例如“我得了 _____%”）并输入您的分数。" },
-                { label: "切换用户", desc: "点击顶部的用户按钮 (👤)，然后选择一个名字。您也可以在那里添加或编辑用户。" },
-                { label: "更改语言/时间", desc: "点击用户按钮旁边的齿轮 (⚙)，选择您的选项，然后点击保存。" },
-                { label: "备份您的进度", desc: "滚动到底部并点击导出以保存文件。点击导入以恢复。" },
-                { label: "在安卓上安装", desc: "屏幕右下角会出现一个小的安装按钮 (↓)。点击它将应用添加到您的主屏幕。" },
-                { label: "离线使用", desc: "首次访问后，应用可离线使用。无需注册。" }
-            ]
-        },
-        French: {
-            loading: "Chargement de votre programme d'apprentissage…",
-            export: "Exporter",
-            import: "Importer",
-            aboutLabel: "À propos & Contact",
-            aboutTitle: "Aleph avec Beth",
-            aboutVersion: "Version",
-            aboutType: "Suivi d'étude",
-            aboutDesc: '<strong>Aleph avec Beth</strong> est un suivi d\'étude gratuit, hors ligne, basé sur le programme <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>. Il vous aide à suivre les leçons vidéo jour après jour, à cocher les tâches, à enregistrer vos résultats de quiz et à ne jamais perdre votre place – même sans internet.',
-            aboutFeaturesTitle: "Fonctionnalités",
-            aboutFeaturesList: "• Programme dynamique d'Aleph with Beth / Alpha with Angela<br>• Priorité hors ligne – fonctionne entièrement sans internet après la première visite<br>• Champs à remplir pour les résultats de quiz<br>• Suivi de la progression avec pourcentage et barres visuelles<br>• Exportation / importation de la progression pour sauvegarde ou transfert<br>• Installable comme application autonome",
-            aboutCreditsTitle: "Crédits",
-            aboutCreditsText: 'Programme offert par <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (domaine public). Construit avec amour par <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>, membre de <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a>.',
-            aboutGlory: "Pour la gloire de Dieu seul.",
-            feedbackHeader: "💬 Envoyer un message",
-            feedbackSubtitle: "Signalez un bug, suggérez une fonctionnalité ou dites simplement bonjour.",
-            feedbackNamePlaceholder: "Votre nom",
-            feedbackEmailPlaceholder: "Votre email",
-            feedbackTextareaPlaceholder: "Votre message…",
-            sendLabel: "Envoyer le message",
-            feedbackNote: "Envoyé directement au développeur.",
-            userModalTitleEdit: "Modifier le nom",
-            userModalTitleAdd: "Ajouter un utilisateur",
-            userModalPlaceholder: "Entrez le nom",
-            cancel: "Annuler",
-            save: "Enregistrer",
-            settingsTitle: "Paramètres du programme",
-            langLabel: "Langue",
-            timeLabel: "Temps par jour",
-            retry: "Réessayer",
-            noData: "Aucune donnée de programme trouvée.",
-            errorLoad: "Impossible de charger le programme.",
-            errorCheckConnection: "Vérifiez votre connexion et réessayez.",
-            userDropdownEdit: "Modifier le nom",
-            userDropdownAdd: "Ajouter un utilisateur",
-            userDropdownRemove: "Supprimer l'utilisateur",
-            userRemoveConfirm: 'Supprimer l\'utilisateur "{0}" ?',
-            helpTitle: "Aide",
-            helpInstructions: [
-                { label: "Voir votre programme", desc: "Appuyez sur une semaine (ex. « Semaine 1 ») pour la développer, puis appuyez sur un jour pour voir ses tâches." },
-                { label: "Cocher une tâche", desc: "Appuyez sur la case à cocher. La tâche s'estompe et l'anneau de progression se remplit." },
-                { label: "Entrer un score de quiz", desc: "Appuyez sur le blanc (ex. « J'ai obtenu _____% ») et tapez votre score." },
-                { label: "Changer de profil", desc: "Appuyez sur la pastille utilisateur (👤) en haut, puis choisissez un nom. Vous pouvez également ajouter ou modifier des utilisateurs à partir de là." },
-                { label: "Changer la langue/le temps", desc: "Appuyez sur l'engrenage (⚙) à côté de la pastille utilisateur, choisissez vos options, puis appuyez sur Enregistrer." },
-                { label: "Sauvegarder votre progression", desc: "Faites défiler vers le bas et appuyez sur Exporter pour enregistrer un fichier. Appuyez sur Importer pour le restaurer plus tard." },
-                { label: "Installer sur Android", desc: "Un petit bouton d'installation (↓) apparaîtra dans le coin inférieur droit de l'écran. Appuyez dessus pour ajouter l'application à votre écran d'accueil." },
-                { label: "Utilisation hors ligne", desc: "L'application fonctionne hors ligne après la première visite. Aucune inscription nécessaire." }
-            ]
-        },
-        Russian: {
-            loading: "Загрузка учебного расписания…",
-            export: "Экспорт",
-            import: "Импорт",
-            aboutLabel: "О программе и контакты",
-            aboutTitle: "Алеф с Бет",
-            aboutVersion: "Версия",
-            aboutType: "Учебный трекер",
-            aboutDesc: '<strong>Алеф с Бет</strong> — это бесплатный офлайн-трекер обучения, основанный на учебной программе <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>. Он помогает вам проходить видеоуроки день за днём, отмечать задания, записывать результаты тестов и никогда не терять своё место — даже без интернета.',
-            aboutFeaturesTitle: "Возможности",
-            aboutFeaturesList: "• Динамическое расписание от Aleph with Beth / Alpha with Angela<br>• Офлайн-доступ — полностью работает без интернета после первого посещения<br>• Заполняемые поля для результатов тестов<br>• Отслеживание прогресса с процентами и визуальными индикаторами<br>• Экспорт / импорт прогресса для резервного копирования или переноса<br>• Устанавливается как самостоятельное приложение",
-            aboutCreditsTitle: "Благодарности",
-            aboutCreditsText: 'Учебная программа предоставлена <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (общественное достояние). С любовью создано <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>, членом <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a>.',
-            aboutGlory: "Только во славу Божью.",
-            feedbackHeader: "💬 Отправить сообщение",
-            feedbackSubtitle: "Сообщите об ошибке, предложите функцию или просто поздоровайтесь.",
-            feedbackNamePlaceholder: "Ваше имя",
-            feedbackEmailPlaceholder: "Ваш email",
-            feedbackTextareaPlaceholder: "Ваше сообщение…",
-            sendLabel: "Отправить сообщение",
-            feedbackNote: "Отправляется напрямую разработчику.",
-            userModalTitleEdit: "Изменить имя",
-            userModalTitleAdd: "Добавить пользователя",
-            userModalPlaceholder: "Введите имя",
-            cancel: "Отмена",
-            save: "Сохранить",
-            settingsTitle: "Настройки расписания",
-            langLabel: "Язык",
-            timeLabel: "Время в день",
-            retry: "Попробовать снова",
-            noData: "Данные расписания не найдены.",
-            errorLoad: "Не удалось загрузить расписание.",
-            errorCheckConnection: "Проверьте подключение и попробуйте снова.",
-            userDropdownEdit: "Изменить имя",
-            userDropdownAdd: "Добавить пользователя",
-            userDropdownRemove: "Удалить пользователя",
-            userRemoveConfirm: 'Удалить пользователя "{0}"?',
-            helpTitle: "Помощь",
-            helpInstructions: [
-                { label: "Просмотр расписания", desc: "Нажмите на неделю (например, «Неделя 1»), чтобы развернуть её, затем нажмите на день, чтобы увидеть задания." },
-                { label: "Отметка задания", desc: "Нажмите на флажок. Задание потускнеет, а кольцо прогресса заполнится." },
-                { label: "Ввод результата теста", desc: "Нажмите на пропуск (например, «Я набрал _____%») и введите свой результат." },
-                { label: "Смена пользователя", desc: "Нажмите на значок пользователя (👤) вверху, затем выберите имя. Там же можно добавить или изменить пользователей." },
-                { label: "Изменение языка/времени", desc: "Нажмите на шестерёнку (⚙) рядом со значком пользователя, выберите параметры и нажмите «Сохранить»." },
-                { label: "Резервное копирование прогресса", desc: "Прокрутите вниз и нажмите «Экспорт», чтобы сохранить файл. Нажмите «Импорт», чтобы восстановить его позже." },
-                { label: "Установка на Android", desc: "В правом нижнем углу экрана появится маленькая кнопка установки (↓). Нажмите её, чтобы добавить приложение на главный экран." },
-                { label: "Офлайн-использование", desc: "Приложение работает офлайн после первого посещения. Регистрация не требуется." }
-            ]
-        },
-        Spanish: {
-            loading: "Cargando tu plan de estudios…",
-            export: "Exportar",
-            import: "Importar",
-            aboutLabel: "Acerca de y contacto",
-            aboutTitle: "Aleph con Beth",
-            aboutVersion: "Versión",
-            aboutType: "Rastreador de estudio",
-            aboutDesc: '<strong>Aleph con Beth</strong> es un rastreador de estudio gratuito y sin conexión basado en el plan de estudios de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a>. Te ayuda a seguir las lecciones en video día a día, marcar tareas, registrar puntuaciones de exámenes y nunca perder tu lugar, incluso sin internet.',
-            aboutFeaturesTitle: "Características",
-            aboutFeaturesList: "• Plan dinámico de Aleph with Beth / Alpha with Angela<br>• Primero sin conexión: funciona completamente sin internet después de la primera visita<br>• Espacios en blanco para puntuaciones de exámenes<br>• Seguimiento del progreso con porcentaje y barras visuales<br>• Exportar/importar progreso para respaldo o cambio de dispositivo<br>• Instalable como aplicación independiente",
-            aboutCreditsTitle: "Créditos",
-            aboutCreditsText: 'Plan de estudios cortesía de <a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">Aleph with Beth</a> (dominio público). Construido con amor por <a href="https://kutosi.com" target="_blank" rel="noopener noreferrer">Humphrey Kutosi</a>, miembro de <a href="https://petrareformedbaptistchurch.org/" target="_blank" rel="noopener noreferrer">Petra Reformed Baptist Church</a>.',
-            aboutGlory: "Solo para la gloria de Dios.",
-            feedbackHeader: "💬 Enviar un mensaje",
-            feedbackSubtitle: "Informa de un error, sugiere una función o simplemente saluda.",
-            feedbackNamePlaceholder: "Tu nombre",
-            feedbackEmailPlaceholder: "Tu correo electrónico",
-            feedbackTextareaPlaceholder: "Tu mensaje…",
-            sendLabel: "Enviar mensaje",
-            feedbackNote: "Enviado directamente al desarrollador.",
-            userModalTitleEdit: "Editar nombre",
-            userModalTitleAdd: "Agregar usuario",
-            userModalPlaceholder: "Ingresa el nombre",
-            cancel: "Cancelar",
-            save: "Guardar",
-            settingsTitle: "Configuración del plan",
-            langLabel: "Idioma",
-            timeLabel: "Tiempo por día",
-            retry: "Intentar de nuevo",
-            noData: "No se encontraron datos del plan.",
-            errorLoad: "No se pudo cargar el plan.",
-            errorCheckConnection: "Verifica tu conexión e inténtalo de nuevo.",
-            userDropdownEdit: "Editar nombre",
-            userDropdownAdd: "Agregar usuario",
-            userDropdownRemove: "Eliminar usuario",
-            userRemoveConfirm: '¿Eliminar usuario "{0}"?',
-            helpTitle: "Ayuda",
-            helpInstructions: [
-                { label: "Ver tu plan", desc: "Toca una semana (ej. “Semana 1”) para expandirla, luego toca un día para ver sus tareas." },
-                { label: "Marcar una tarea", desc: "Toca la casilla de verificación. La tarea se atenúa y el anillo de progreso se llena." },
-                { label: "Ingresar una puntuación de prueba", desc: "Toca el espacio en blanco (ej. “Obtuve _____%”) y escribe tu puntuación." },
-                { label: "Cambiar de perfil", desc: "Toca la pastilla de usuario (👤) en la parte superior, luego elige un nombre. También puedes agregar o editar usuarios desde allí." },
-                { label: "Cambiar idioma/tiempo", desc: "Toca el engranaje (⚙) junto a la pastilla de usuario, elige tus opciones y toca Guardar." },
-                { label: "Respaldar tu progreso", desc: "Desplázate hasta abajo y toca Exportar para guardar un archivo. Toca Importar para restaurarlo más tarde." },
-                { label: "Instalar en Android", desc: "Aparecerá un pequeño botón de instalación (↓) en la esquina inferior derecha de la pantalla. Tócalo para agregar la aplicación a tu pantalla de inicio." },
-                { label: "Uso sin conexión", desc: "La aplicación funciona sin conexión después de la primera visita. No es necesario registrarse." }
-            ]
-        }
-    };
-
-    // ── Program name cache (loaded from local JSON) ──
+    // --- Program name cache ---
     let programNamesCache = null;
 
     async function fetchProgramNames() {
@@ -801,54 +546,90 @@
                 return programNamesCache;
             }
         } catch(e) { /* use fallback */ }
-        programNamesCache = BUILTIN_PROGRAM_NAMES;
+        programNamesCache = {};
         return programNamesCache;
     }
 
-    function getProgramName(lang) {
-        if (programNamesCache && programNamesCache[lang]) return programNamesCache[lang];
-        return BUILTIN_PROGRAM_NAMES[lang] || 'Aleph with Beth';
+    function getProgramName(lang, type = 'Aleph') {
+        // type can be 'Aleph' or 'Alpha'
+        if (programNamesCache && programNamesCache[lang] && programNamesCache[lang][type]) {
+            return programNamesCache[lang][type];
+        }
+        // fallback to English
+        if (programNamesCache && programNamesCache['English'] && programNamesCache['English'][type]) {
+            return programNamesCache['English'][type];
+        }
+        return type === 'Aleph' ? 'Aleph with Beth' : 'Alpha with Angela';
     }
 
-    function getUILocale(lang) {
-        return UI_LOCALE[lang] || UI_LOCALE["English"];
+    // --- Locale cache ---
+    const localeCache = {};
+
+    async function getLocale(lang) {
+        if (localeCache[lang]) return localeCache[lang];
+        try {
+            const resp = await fetch(LOCALES_PATH + lang + '.json');
+            if (resp.ok) {
+                const data = await resp.json();
+                localeCache[lang] = data;
+                return data;
+            }
+        } catch(e) { /* fallback to built-in English */ }
+        // fallback to English
+        if (!localeCache['English']) {
+            localeCache['English'] = FALLBACK_LOCALE;
+        }
+        return localeCache['English'];
     }
 
-    function applyLocale(lang) {
-        const loc = getUILocale(lang);
-        const programName = getProgramName(lang);
+    function applyLocale(loc, lang) {
+        const programName = getProgramName(lang, 'Aleph'); // currently only Aleph
+        const replacePlaceholders = (str) => str.replace(/\{programName\}/g, programName).replace(/\{0\}/g, '');
+
+        if (dom.pageTitle) dom.pageTitle.textContent = programName;
         if (dom.attributionText) dom.attributionText.innerHTML = `<a href="https://freehebrew.online/" target="_blank" rel="noopener noreferrer">${escapeHtml(programName)}</a>`;
-        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
-        if (dom.exportLabel) dom.exportLabel.textContent = loc.export;
-        if (dom.importLabel) dom.importLabel.textContent = loc.import;
-        if (dom.aboutLabel) dom.aboutLabel.textContent = loc.aboutLabel;
-        if (dom.aboutOverlayTitle) dom.aboutOverlayTitle.textContent = loc.aboutTitle;
-        if (dom.overlayType) dom.overlayType.textContent = loc.aboutType;
-        if (dom.aboutDesc) dom.aboutDesc.innerHTML = loc.aboutDesc;
-        if (dom.aboutFeaturesTitle) dom.aboutFeaturesTitle.textContent = loc.aboutFeaturesTitle;
-        if (dom.aboutFeaturesList) dom.aboutFeaturesList.innerHTML = loc.aboutFeaturesList;
-        if (dom.aboutCreditsTitle) dom.aboutCreditsTitle.textContent = loc.aboutCreditsTitle;
-        if (dom.aboutCreditsText) dom.aboutCreditsText.innerHTML = loc.aboutCreditsText;
-        if (dom.aboutGlory) dom.aboutGlory.textContent = loc.aboutGlory;
-        if (dom.feedbackHeader) dom.feedbackHeader.textContent = loc.feedbackHeader;
-        if (dom.feedbackSubtitle) dom.feedbackSubtitle.textContent = loc.feedbackSubtitle;
-        if (dom.feedbackName) dom.feedbackName.placeholder = loc.feedbackNamePlaceholder;
-        if (dom.feedbackEmail) dom.feedbackEmail.placeholder = loc.feedbackEmailPlaceholder;
-        if (dom.feedbackTextarea) dom.feedbackTextarea.placeholder = loc.feedbackTextareaPlaceholder;
-        if (dom.sendLabel) dom.sendLabel.textContent = loc.sendLabel;
-        if (dom.feedbackNote) dom.feedbackNote.textContent = loc.feedbackNote;
-        if (dom.userModalTitle && dom.userModalTitle.getAttribute('data-mode') === 'edit') dom.userModalTitle.textContent = loc.userModalTitleEdit;
-        if (dom.userModalTitle && dom.userModalTitle.getAttribute('data-mode') === 'add') dom.userModalTitle.textContent = loc.userModalTitleAdd;
-        if (dom.userNameInput) dom.userNameInput.placeholder = loc.userModalPlaceholder;
-        if (dom.userModalCancel) dom.userModalCancel.textContent = loc.cancel;
-        if (dom.userModalSave) dom.userModalSave.textContent = loc.save;
-        if (dom.settingsModalTitle) dom.settingsModalTitle.textContent = loc.settingsTitle;
-        if (dom.settingsLangLabel) dom.settingsLangLabel.textContent = loc.langLabel;
-        if (dom.settingsTimeLabel) dom.settingsTimeLabel.textContent = loc.timeLabel;
-        if (dom.settingsModalCancel) dom.settingsModalCancel.textContent = loc.cancel;
-        if (dom.settingsModalSave) dom.settingsModalSave.textContent = loc.save;
+        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle || '';
+        if (dom.exportLabel) dom.exportLabel.textContent = loc.export || '';
+        if (dom.importLabel) dom.importLabel.textContent = loc.import || '';
+        if (dom.aboutLabel) dom.aboutLabel.textContent = loc.aboutLabel || '';
+        if (dom.aboutOverlayTitle) dom.aboutOverlayTitle.textContent = replacePlaceholders(loc.aboutTitle || '');
+        if (dom.overlayType) dom.overlayType.textContent = loc.aboutType || '';
+        if (dom.aboutDesc) dom.aboutDesc.innerHTML = replacePlaceholders(loc.aboutDesc || '');
+        if (dom.aboutFeaturesTitle) dom.aboutFeaturesTitle.textContent = loc.aboutFeaturesTitle || '';
+        if (dom.aboutFeaturesList) dom.aboutFeaturesList.innerHTML = loc.aboutFeaturesList || '';
+        if (dom.aboutCreditsTitle) dom.aboutCreditsTitle.textContent = loc.aboutCreditsTitle || '';
+        if (dom.aboutCreditsText) dom.aboutCreditsText.innerHTML = replacePlaceholders(loc.aboutCreditsText || '');
+        if (dom.aboutGlory) dom.aboutGlory.textContent = loc.aboutGlory || '';
+        if (dom.feedbackHeader) dom.feedbackHeader.textContent = loc.feedbackHeader || '';
+        if (dom.feedbackSubtitle) dom.feedbackSubtitle.textContent = loc.feedbackSubtitle || '';
+        if (dom.feedbackName) dom.feedbackName.placeholder = loc.feedbackNamePlaceholder || '';
+        if (dom.feedbackEmail) dom.feedbackEmail.placeholder = loc.feedbackEmailPlaceholder || '';
+        if (dom.feedbackTextarea) dom.feedbackTextarea.placeholder = loc.feedbackTextareaPlaceholder || '';
+        if (dom.sendLabel) dom.sendLabel.textContent = loc.sendLabel || '';
+        if (dom.feedbackNote) dom.feedbackNote.textContent = loc.feedbackNote || '';
+        if (dom.userModalTitle && dom.userModalTitle.getAttribute('data-mode') === 'edit') dom.userModalTitle.textContent = loc.userModalTitleEdit || '';
+        if (dom.userModalTitle && dom.userModalTitle.getAttribute('data-mode') === 'add') dom.userModalTitle.textContent = loc.userModalTitleAdd || '';
+        if (dom.userNameInput) dom.userNameInput.placeholder = loc.userModalPlaceholder || '';
+        if (dom.userModalCancel) dom.userModalCancel.textContent = loc.cancel || '';
+        if (dom.userModalSave) dom.userModalSave.textContent = loc.save || '';
+        if (dom.settingsModalTitle) dom.settingsModalTitle.textContent = loc.settingsTitle || '';
+        if (dom.settingsLangLabel) dom.settingsLangLabel.textContent = loc.langLabel || '';
+        if (dom.settingsTimeLabel) dom.settingsTimeLabel.textContent = loc.timeLabel || '';
+        if (dom.settingsModalCancel) dom.settingsModalCancel.textContent = loc.cancel || '';
+        if (dom.settingsModalSave) dom.settingsModalSave.textContent = loc.save || '';
+
+        // Help content built dynamically
+        if (dom.helpContent && loc.helpInstructions) {
+            dom.helpContent.innerHTML = '';
+            loc.helpInstructions.forEach(step => {
+                const p = document.createElement('p');
+                p.innerHTML = `<strong>${escapeHtml(step.label)}:</strong> ${escapeHtml(step.desc)}`;
+                dom.helpContent.appendChild(p);
+            });
+        }
     }
 
+    // --- DOM references ---
     let dom = {};
     function cacheDomReferences() {
         dom.appContainer = document.getElementById('appContainer');
@@ -884,6 +665,7 @@
         dom.settingsModalTitle = document.getElementById('settingsModalTitle');
         dom.settingsLangLabel = document.getElementById('settingsLangLabel');
         dom.settingsTimeLabel = document.getElementById('settingsTimeLabel');
+        dom.pageTitle = document.getElementById('pageTitle');
         dom.attributionText = document.getElementById('attributionText');
         dom.exportLabel = document.getElementById('exportLabel');
         dom.importLabel = document.getElementById('importLabel');
@@ -905,11 +687,13 @@
         dom.helpOverlayClose = document.getElementById('helpOverlayClose');
         dom.helpOverlayTitle = document.getElementById('helpOverlayTitle');
         dom.helpContent = document.getElementById('helpContent');
+        dom.overlayVersionNumber = document.getElementById('overlayVersionNumber');
     }
 
+    // --- User management ---
     const USER_LIST_KEY = 'hebrew-user-list';
     const CURRENT_USER_KEY = 'hebrew-current-user';
-    const DEFAULT_USER = '';   // empty, shows only avatar
+    const DEFAULT_USER = '';   // empty
     let currentUser = DEFAULT_USER;
 
     function getUserList() { try { return JSON.parse(localStorage.getItem(USER_LIST_KEY)) || []; } catch(e) { return []; } }
@@ -923,7 +707,7 @@
         if (localStorage.getItem(oldTaskKey) !== null) {
             let users = getUserList();
             if (!users.includes(DEFAULT_USER)) { users.push(DEFAULT_USER); setUserList(users); }
-            const userPrefix = 'user-Student-';   // old default
+            const userPrefix = 'user-Student-';
             localStorage.setItem(userPrefix + 'aleph-beth-task-states', localStorage.getItem(oldTaskKey));
             localStorage.removeItem(oldTaskKey);
             ['hebrewBaselineTotalDays','hebrewHighestLevel','hebrewLastCelebratedLevel','hebrewGraduationCelebrated'].forEach(k => {
@@ -947,8 +731,7 @@
         try {
             const raw = localStorage.getItem(key);
             if (!raw) return {};
-            const data = JSON.parse(raw);
-            return data;
+            return JSON.parse(raw);
         } catch(e) { return {}; }
     }
 
@@ -990,7 +773,7 @@
         const users = getUserList();
         const dropdown = dom.userDropdown;
         if (!dropdown) return;
-        const loc = getUILocale(getScheduleSettings().lang);
+        const loc = localeCache[getScheduleSettings().lang] || FALLBACK_LOCALE;
         dropdown.innerHTML = '';
         users.forEach(user => {
             const item = document.createElement('div');
@@ -1002,21 +785,21 @@
         const divider = document.createElement('div'); divider.className = 'user-dropdown-divider'; dropdown.appendChild(divider);
 
         const editItem = document.createElement('div'); editItem.className = 'user-dropdown-item';
-        editItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg><span>${loc.userDropdownEdit}</span>`;
+        editItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg><span>${loc.userDropdownEdit || ''}</span>`;
         editItem.addEventListener('click', e => { e.stopPropagation(); openUserModal('edit', currentUser); });
         dropdown.appendChild(editItem);
 
         const addItem = document.createElement('div'); addItem.className = 'user-dropdown-item';
-        addItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span>${loc.userDropdownAdd}</span>`;
+        addItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span>${loc.userDropdownAdd || ''}</span>`;
         addItem.addEventListener('click', e => { e.stopPropagation(); openUserModal('add'); });
         dropdown.appendChild(addItem);
 
         if (users.length > 1) {
             const removeItem = document.createElement('div'); removeItem.className = 'user-dropdown-item';
-            removeItem.innerHTML = `<svg class="remove-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span>${loc.userDropdownRemove}</span>`;
+            removeItem.innerHTML = `<svg class="remove-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span>${loc.userDropdownRemove || ''}</span>`;
             removeItem.addEventListener('click', e => {
                 e.stopPropagation();
-                const confirmMsg = loc.userRemoveConfirm.replace('{0}', currentUser || '');
+                const confirmMsg = (loc.userRemoveConfirm || '').replace('{0}', currentUser || '');
                 if(confirm(confirmMsg)) { removeCurrentUser(); closeUserDropdown(); }
             });
             dropdown.appendChild(removeItem);
@@ -1049,13 +832,13 @@
     let userModalMode = 'edit', userModalTargetUser = '';
     function openUserModal(mode, user = '') {
         userModalMode = mode;
-        const loc = getUILocale(getScheduleSettings().lang);
+        const loc = localeCache[getScheduleSettings().lang] || FALLBACK_LOCALE;
         if (mode === 'edit') {
-            if (dom.userModalTitle) { dom.userModalTitle.textContent = loc.userModalTitleEdit; dom.userModalTitle.setAttribute('data-mode','edit'); }
+            if (dom.userModalTitle) { dom.userModalTitle.textContent = loc.userModalTitleEdit || ''; dom.userModalTitle.setAttribute('data-mode','edit'); }
             if (dom.userNameInput) dom.userNameInput.value = user;
             userModalTargetUser = user;
         } else {
-            if (dom.userModalTitle) { dom.userModalTitle.textContent = loc.userModalTitleAdd; dom.userModalTitle.setAttribute('data-mode','add'); }
+            if (dom.userModalTitle) { dom.userModalTitle.textContent = loc.userModalTitleAdd || ''; dom.userModalTitle.setAttribute('data-mode','add'); }
             if (dom.userNameInput) dom.userNameInput.value = '';
             userModalTargetUser = '';
         }
@@ -1087,6 +870,7 @@
         renderUserDropdown();
     }
 
+    // --- Language & Settings ---
     function populateLangDropdown() {
         if (!dom.settingsLang) return;
         dom.settingsLang.innerHTML = '';
@@ -1099,12 +883,12 @@
     }
 
     function localizeSettingsModal(lang) {
-        const loc = getUILocale(lang);
-        if (dom.settingsModalTitle) dom.settingsModalTitle.textContent = loc.settingsTitle;
-        if (dom.settingsLangLabel) dom.settingsLangLabel.textContent = loc.langLabel;
-        if (dom.settingsTimeLabel) dom.settingsTimeLabel.textContent = loc.timeLabel;
-        if (dom.settingsModalCancel) dom.settingsModalCancel.textContent = loc.cancel;
-        if (dom.settingsModalSave) dom.settingsModalSave.textContent = loc.save;
+        const loc = localeCache[lang] || FALLBACK_LOCALE;
+        if (dom.settingsModalTitle) dom.settingsModalTitle.textContent = loc.settingsTitle || '';
+        if (dom.settingsLangLabel) dom.settingsLangLabel.textContent = loc.langLabel || '';
+        if (dom.settingsTimeLabel) dom.settingsTimeLabel.textContent = loc.timeLabel || '';
+        if (dom.settingsModalCancel) dom.settingsModalCancel.textContent = loc.cancel || '';
+        if (dom.settingsModalSave) dom.settingsModalSave.textContent = loc.save || '';
     }
 
     function openSettingsModal() {
@@ -1122,8 +906,11 @@
         };
         localStorage.setItem('hebrew-schedule-settings', JSON.stringify(settings));
         closeSettingsModal();
-        applyLocale(settings.lang);
-        fetchAndRenderSchedule(true);
+        // Load new locale and apply
+        getLocale(settings.lang).then(loc => {
+            applyLocale(loc, settings.lang);
+            fetchAndRenderSchedule(true);
+        });
     }
     function getScheduleSettings() {
         const def = { lang: 'English', time: '60' };
@@ -1133,6 +920,7 @@
         } catch(e) { return def; }
     }
 
+    // --- Schedule fetching ---
     function buildScheduleUrl(settings) {
         const prog = 'AWB';
         const time = settings.time;
@@ -1143,9 +931,7 @@
     async function fetchWithTimeout(url, timeoutMs = 20000, signal = null) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
-        if (signal) {
-            signal.addEventListener('abort', () => controller.abort());
-        }
+        if (signal) signal.addEventListener('abort', () => controller.abort());
         try {
             const resp = await fetch(url, { signal: controller.signal });
             clearTimeout(timer);
@@ -1159,9 +945,7 @@
     let activeFetchController = null;
     async function fetchWithFallback(settings) {
         const directUrl = buildScheduleUrl(settings);
-        if (activeFetchController) {
-            activeFetchController.abort();
-        }
+        if (activeFetchController) activeFetchController.abort();
         activeFetchController = new AbortController();
         const signal = activeFetchController.signal;
 
@@ -1169,7 +953,7 @@
             try {
                 const resp = await fetchWithTimeout(directUrl, 20000, signal);
                 if (resp.ok) return await resp.text();
-            } catch(e) { /* ignore */ }
+            } catch(e) {}
             const proxyUrl = CORS_WORKER + encodeURIComponent(directUrl);
             const resp = await fetchWithTimeout(proxyUrl, 20000, signal);
             if (resp.ok) return await resp.text();
@@ -1273,12 +1057,12 @@
             renderApp(weeks, loadTaskStates());
         } catch(err) {
             console.error('Schedule load error:', err);
-            const loc = getUILocale(settings.lang);
+            const loc = localeCache[settings.lang] || FALLBACK_LOCALE;
             const errHtml = `<div class="error-state">
                 <div class="error-icon">📡</div>
-                <p>${loc.errorLoad}</p>
-                <p>${loc.errorCheckConnection}</p>
-                <button class="retry-btn" id="retryInlineBtn">${loc.retry}</button>
+                <p>${loc.errorLoad || ''}</p>
+                <p>${loc.errorCheckConnection || ''}</p>
+                <button class="retry-btn" id="retryInlineBtn">${loc.retry || ''}</button>
             </div>`;
             if (dom.mainContent) dom.mainContent.innerHTML = errHtml;
             updateTotalProgress(null, {});
@@ -1287,32 +1071,15 @@
         }
     }
 
-    function convertMarkdownLinksToHtml(text) {
-        return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-    }
-    function debounce(fn, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); }; }
-
-    function progressRingSVG(percent, size = 24) {
-        const radius = size === 24 ? 9 : 8;
-        const circumference = 2 * Math.PI * radius;
-        const offset = circumference * (1 - Math.min(percent, 100) / 100);
-        const strokeWidth = size === 24 ? 1.8 : 1.6;
-        const complete = percent >= 100;
-        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--card-border)" stroke-width="${strokeWidth}" />
-                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${size/2} ${size/2})" style="transition: stroke-dashoffset 0.3s ease;" />
-                ${complete ? `<polyline points="${size*0.3},${size*0.55} ${size*0.45},${size*0.7} ${size*0.7},${size*0.4}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />` : ''}
-            </svg>`;
-    }
-
+    // --- Rendering ---
     let collapseState = { weeks: {}, days: {} };
 
     function renderApp(weeksData, savedStates) {
         if (!dom.mainContent) return;
         dom.mainContent.innerHTML = '';
         if (!weeksData || weeksData.length === 0) {
-            const loc = getUILocale(getScheduleSettings().lang);
-            dom.mainContent.innerHTML = `<div class="error-state"><p>${loc.noData}</p><button class="retry-btn" id="retryEmptyBtn">${loc.retry}</button></div>`;
+            const loc = localeCache[getScheduleSettings().lang] || FALLBACK_LOCALE;
+            dom.mainContent.innerHTML = `<div class="error-state"><p>${loc.noData || ''}</p><button class="retry-btn" id="retryEmptyBtn">${loc.retry || ''}</button></div>`;
             const retryBtn = document.getElementById('retryEmptyBtn');
             if (retryBtn) retryBtn.addEventListener('click', () => fetchAndRenderSchedule(true));
             updateTotalProgress(weeksData, savedStates);
@@ -1348,9 +1115,7 @@
 
     function buildFallbackMap(weeksData) {
         const map = {};
-        weeksData.forEach(week => week.days.forEach(day => day.tasks.forEach(task => {
-            map[task.id] = task.id;
-        })));
+        weeksData.forEach(week => week.days.forEach(day => day.tasks.forEach(task => { map[task.id] = task.id; })));
         window._fallbackMap = map;
     }
 
@@ -1411,6 +1176,21 @@
     }
 
     function escapeHtml(str) { if (!str) return ''; const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+    function convertMarkdownLinksToHtml(text) { return text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'); }
+    function debounce(fn, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); }; }
+
+    function progressRingSVG(percent, size = 24) {
+        const radius = size === 24 ? 9 : 8;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference * (1 - Math.min(percent, 100) / 100);
+        const strokeWidth = size === 24 ? 1.8 : 1.6;
+        const complete = percent >= 100;
+        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--card-border)" stroke-width="${strokeWidth}" />
+                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-dasharray="${circumference.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${size/2} ${size/2})" style="transition: stroke-dashoffset 0.3s ease;" />
+                ${complete ? `<polyline points="${size*0.3},${size*0.55} ${size*0.45},${size*0.7} ${size*0.7},${size*0.4}" fill="none" stroke="var(--accent)" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+            </svg>`;
+    }
 
     function attachWeekEventListeners(card, week) {
         card.querySelector('.week-header')?.addEventListener('click', function(e) { if (e.target.closest('a')) return; toggleWeekCollapse(week.id, card); });
@@ -1489,6 +1269,7 @@
         });
     }
 
+    // --- Export / Import ---
     function exportProgress() {
         const states = loadTaskStates();
         const exportData = { version: 1, user: currentUser, tasks: {} };
@@ -1521,13 +1302,15 @@
         reader.readAsText(file);
     }
 
+    // --- Overlays ---
     function openOverlay(overlay) { if (overlay) { overlay.classList.add('visible'); overlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
     function closeOverlay(overlay) { if (overlay) { overlay.classList.remove('visible'); overlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
 
     function openHelpOverlay() {
-        const loc = getUILocale(getScheduleSettings().lang);
-        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle;
-        if (dom.helpContent) {
+        const lang = getScheduleSettings().lang;
+        const loc = localeCache[lang] || FALLBACK_LOCALE;
+        if (dom.helpOverlayTitle) dom.helpOverlayTitle.textContent = loc.helpTitle || '';
+        if (dom.helpContent && loc.helpInstructions) {
             dom.helpContent.innerHTML = '';
             loc.helpInstructions.forEach(step => {
                 const p = document.createElement('p');
@@ -1559,6 +1342,7 @@
         finally { if (dom.sendFeedbackBtn) { dom.sendFeedbackBtn.disabled = false; dom.sendFeedbackBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L2 8.66667L11.5833 12.4167M22 2L15.3333 22L11.5833 12.4167M22 2L11.5833 12.4167"/></svg> Send Message`; } }
     }
 
+    // --- Install ---
     let deferredPrompt = null;
     function handleBeforeInstallPrompt(e) { e.preventDefault(); deferredPrompt = e; if (dom.installBtn) dom.installBtn.classList.remove('hidden'); }
     async function installApp() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome==='accepted') { if (dom.installBtn) dom.installBtn.classList.add('hidden'); deferredPrompt = null; } }
@@ -1566,6 +1350,7 @@
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', () => { if (dom.installBtn) dom.installBtn.classList.add('hidden'); });
 
+    // --- Service Worker ---
     async function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         try {
@@ -1578,16 +1363,21 @@
         } catch(e) {}
     }
 
+    // --- Init ---
     async function initApp() {
         cacheDomReferences();
         checkInstalled();
-        await fetchProgramNames();   // load local JSON with program names
+        await fetchProgramNames();
+        // Preload English locale into cache
+        localeCache['English'] = FALLBACK_LOCALE;
         migrateOldDataIfNeeded();
         currentUser = getCurrentUser();
         updateUserPill();
         populateLangDropdown();
         const settings = getScheduleSettings();
-        applyLocale(settings.lang);
+        // Load locale for current language
+        const loc = await getLocale(settings.lang);
+        applyLocale(loc, settings.lang);
         const swPromise = registerServiceWorker();
         await fetchAndRenderSchedule(false);
         await swPromise;
